@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="ClawHalla Docs">
+  <main class="min-h-screen bg-dark text-gray-200 px-4 py-16">
+    <section class="max-w-4xl mx-auto">
+      <h1 class="font-heading text-4xl md:text-5xl font-bold mb-4">
+        <span class="text-primary">ClawHalla</span> Documentation
+      </h1>
+      <p class="text-gray-400 mb-10">
+        Start here, then continue to the full Starlight sections.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <a href="/getting-started/installation/" class="p-5 rounded-lg border border-dark-200 hover:border-primary/40 transition-colors">
+          <h2 class="font-heading text-xl text-primary mb-1">Installation</h2>
+          <p class="text-gray-400 text-sm">Install ClawHalla and run your first onboarding.</p>
+        </a>
+
+        <a href="/getting-started/configuration/" class="p-5 rounded-lg border border-dark-200 hover:border-primary/40 transition-colors">
+          <h2 class="font-heading text-xl text-primary mb-1">Configuration</h2>
+          <p class="text-gray-400 text-sm">Set environment variables and onboarding preferences.</p>
+        </a>
+
+        <a href="/guides/first-agent/" class="p-5 rounded-lg border border-dark-200 hover:border-primary/40 transition-colors">
+          <h2 class="font-heading text-xl text-primary mb-1">Your First Agent</h2>
+          <p class="text-gray-400 text-sm">Bring your first OpenClaw agent online.</p>
+        </a>
+
+        <a href="/reference/scripts/" class="p-5 rounded-lg border border-dark-200 hover:border-primary/40 transition-colors">
+          <h2 class="font-heading text-xl text-primary mb-1">Reference</h2>
+          <p class="text-gray-400 text-sm">Scripts, Docker, and environment variable reference.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+</Layout>

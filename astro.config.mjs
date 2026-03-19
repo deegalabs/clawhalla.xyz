@@ -20,29 +20,29 @@ export default defineConfig({
         {
           label: 'Getting Started',
           items: [
-            { label: 'Introduction', link: '/docs/' },
-            { label: 'Installation', link: '/docs/getting-started/installation/' },
-            { label: 'Configuration', link: '/docs/getting-started/configuration/' },
+            { label: 'Introduction', link: '/' },
+            { label: 'Installation', link: '/getting-started/installation/' },
+            { label: 'Configuration', link: '/getting-started/configuration/' },
           ],
         },
         {
           label: 'Guides',
           items: [
-            { label: 'Your First Agent', link: '/docs/guides/first-agent/' },
-            { label: 'Customization', link: '/docs/guides/customization/' },
+            { label: 'Your First Agent', link: '/guides/first-agent/' },
+            { label: 'Customization', link: '/guides/customization/' },
           ],
         },
         {
           label: 'Reference',
           items: [
-            { label: 'Scripts', link: '/docs/reference/scripts/' },
-            { label: 'Docker', link: '/docs/reference/docker/' },
-            { label: 'Environment Variables', link: '/docs/reference/environment/' },
+            { label: 'Scripts', link: '/reference/scripts/' },
+            { label: 'Docker', link: '/reference/docker/' },
+            { label: 'Environment Variables', link: '/reference/environment/' },
           ],
         },
         {
           label: 'Contributing',
-          link: '/docs/contributing/',
+          link: '/contributing/',
         },
       ],
       head: [
