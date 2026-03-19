@@ -1,0 +1,75 @@
+---
+// Hero component with Viking theme
+---
+
+<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <div class="absolute inset-0 bg-dark">
+    <div class="stars"></div>
+  </div>
+
+  <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+    <div class="mb-8">
+      <div class="inline-block p-4 rounded-full bg-dark-50 border border-primary/30">
+        <svg class="w-20 h-20 text-primary" viewBox="0 0 100 100" fill="currentColor">
+          <path d="M50 10 L20 40 L20 70 L35 85 L65 85 L80 70 L80 40 Z M30 45 L30 65 M70 45 L70 65 M40 30 L40 20 M60 30 L60 20"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1 class="font-heading text-6xl md:text-8xl font-bold mb-4 rune-glow">
+      <span class="text-primary">Claw</span><span class="text-gray-100">Halla</span>
+    </h1>
+
+    <p class="text-xl md:text-2xl text-primary font-medium tracking-widest uppercase mb-6">
+      Your AI Agent's Hall of Glory
+    </p>
+
+    <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
+      Run OpenClaw in Docker with zero friction. One command to rule them all.
+      <br />
+      No Node.js setup. No dependency hell. Just your agent, ready to serve.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a
+        href="#quick-start"
+        class="px-8 py-4 bg-primary text-dark font-semibold rounded-lg hover:bg-primary-300 transition-colors"
+      >
+        Get Started
+      </a>
+      <a
+        href="https://github.com/deegalabs/clawhalla"
+        target="_blank"
+        class="px-8 py-4 border border-primary/50 text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors"
+      >
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stars {
+    background-image:
+      radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+      radial-gradient(2px 2px at 40px 70px, #fff, transparent),
+      radial-gradient(1px 1px at 90px 40px, #ddd, transparent),
+      radial-gradient(2px 2px at 160px 120px, #fff, transparent),
+      radial-gradient(1px 1px at 230px 80px, #eee, transparent),
+      radial-gradient(2px 2px at 300px 150px, #fff, transparent),
+      radial-gradient(1px 1px at 370px 50px, #ddd, transparent),
+      radial-gradient(2px 2px at 450px 180px, #fff, transparent);
+    background-size: 500px 200px;
+    animation: twinkle 5s ease-in-out infinite;
+    opacity: 0.3;
+  }
+
+  @keyframes twinkle {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>

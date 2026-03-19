@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Starlight theme overrides */
+:root {
+  --sl-color-accent-low: #1a1206;
+  --sl-color-accent: #c8933a;
+  --sl-color-accent-high: #f7f0e3;
+  --sl-color-white: #e5e5e5;
+  --sl-color-gray-1: #cccccc;
+  --sl-color-gray-2: #999999;
+  --sl-color-gray-3: #666666;
+  --sl-color-gray-4: #404040;
+  --sl-color-gray-5: #262626;
+  --sl-color-gray-6: #1a1a1a;
+  --sl-color-black: #0d0d0d;
+  --sl-color-bg: var(--sl-color-black);
+  --sl-color-bg-nav: var(--sl-color-gray-6);
+  --sl-color-bg-sidebar: var(--sl-color-gray-6);
+  --sl-font-system: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c8933a;
+}
+
+pre {
+  border: 1px solid #333 !important;
+  border-radius: 8px !important;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.rune-glow {
+  text-shadow: 0 0 10px rgba(200, 147, 58, 0.5);
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink::after {
+  content: '▋';
+  animation: blink 1s infinite;
+  color: #c8933a;
+}

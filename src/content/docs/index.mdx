@@ -1,0 +1,54 @@
+---
+title: Welcome to ClawHalla
+description: Your AI agent's hall of glory. Running in one command.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+ClawHalla is a Docker-based launcher for [OpenClaw](https://openclaw.ai) that removes all setup friction. Get your AI agent running in under 5 minutes.
+
+## Why ClawHalla?
+
+OpenClaw is a powerful AI agent framework, but setting it up requires:
+
+- Node.js installation
+- pnpm configuration
+- Multiple CLI commands
+- Understanding the ecosystem
+
+ClawHalla wraps all of this in a pre-configured Docker container with helper scripts.
+
+## Quick Start
+
+```bash
+curl -fsSL https://clawhalla.xyz/install.sh | bash
+```
+
+Or manually:
+
+```bash
+git clone https://github.com/deegalabs/clawhalla.git
+cd clawhalla
+cp .env.example .env
+# Edit .env and add your ANTHROPIC_API_KEY
+bash scripts/start.sh
+docker compose exec clawhalla bash
+openclaw onboard
+```
+
+## Next Steps
+
+<CardGrid>
+  <Card title="Installation" icon="rocket">
+    [Detailed installation guide](/docs/getting-started/installation/)
+  </Card>
+  <Card title="Configuration" icon="setting">
+    [Configure your environment](/docs/getting-started/configuration/)
+  </Card>
+  <Card title="First Agent" icon="pencil">
+    [Create your first agent](/docs/guides/first-agent/)
+  </Card>
+  <Card title="Reference" icon="open-book">
+    [Scripts and Docker reference](/docs/reference/scripts/)
+  </Card>
+</CardGrid>

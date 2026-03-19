@@ -1,0 +1,34 @@
+---
+const testimonials = [
+  {
+    name: 'Community User',
+    quote: 'I went from zero to a working OpenClaw setup in minutes.',
+  },
+  {
+    name: 'Dev Team',
+    quote: 'Great baseline for Docker-first AI agent workflows.',
+  },
+  {
+    name: 'Open Source Contributor',
+    quote: 'Simple, opinionated, and easy to extend.',
+  },
+];
+---
+
+<section class="py-20 px-4">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
+      <span class="text-primary">❯</span> Community Notes
+    </h2>
+    <p class="text-gray-400 text-center mb-12">Placeholder quotes until real testimonials are collected.</p>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      {testimonials.map((item) => (
+        <blockquote class="p-6 bg-dark-50 rounded-xl border border-dark-200">
+          <p class="text-gray-200">“{item.quote}”</p>
+          <footer class="mt-4 text-primary text-sm">— {item.name}</footer>
+        </blockquote>
+      ))}
+    </div>
+  </div>
+</section>

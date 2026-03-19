@@ -1,0 +1,33 @@
+---
+title: Installation
+description: How to install ClawHalla on your system.
+---
+
+## Prerequisites
+
+- Docker (v20.10+)
+- Docker Compose (v2.0+)
+- Git
+- Anthropic API key (or your preferred provider)
+
+## One-liner installation
+
+```bash
+curl -fsSL https://clawhalla.xyz/install.sh | bash
+```
+
+## Manual installation
+
+```bash
+git clone https://github.com/deegalabs/clawhalla.git
+cd clawhalla
+cp .env.example .env
+bash scripts/start.sh
+```
+
+Then enter the container and onboard:
+
+```bash
+docker compose exec clawhalla bash
+openclaw onboard
+```

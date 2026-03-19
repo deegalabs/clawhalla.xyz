@@ -1,0 +1,55 @@
+---
+const features = [
+  {
+    icon: '⚡',
+    title: 'One Command Setup',
+    description: 'No Node.js installation, no pnpm, no dependency management. Just Docker and go.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Docker Isolated',
+    description: 'Your agent runs in a clean container. No conflicts with your system, easy to reset.',
+  },
+  {
+    icon: '🤖',
+    title: 'OpenClaw Powered',
+    description: 'Full access to OpenClaw CLI, Gateway, and the entire agent ecosystem.',
+  },
+  {
+    icon: '📦',
+    title: 'Persistent Data',
+    description: 'Your agent configurations survive restarts. Edit files locally, changes sync automatically.',
+  },
+  {
+    icon: '🔧',
+    title: 'Developer Friendly',
+    description: 'Open source, well documented, and easy to customize for your needs.',
+  },
+  {
+    icon: '🚀',
+    title: 'Production Ready',
+    description: 'Same setup works for development and production. Deploy anywhere Docker runs.',
+  },
+];
+---
+
+<section class="py-20 px-4 bg-dark-50">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
+      <span class="text-primary">❯</span> Why ClawHalla
+    </h2>
+    <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
+      OpenClaw is powerful but setup can be complex. ClawHalla removes all friction.
+    </p>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {features.map((feature) => (
+        <div class="p-6 bg-dark rounded-xl border border-dark-200 hover:border-primary/30 transition-colors">
+          <div class="text-4xl mb-4">{feature.icon}</div>
+          <h3 class="font-heading text-xl font-bold text-gray-100 mb-2">{feature.title}</h3>
+          <p class="text-gray-400">{feature.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+---
+title: Docker
+description: Docker image and compose reference.
+---
+
+## Image
+
+`Dockerfile` builds an Ubuntu-based image with Node, pnpm, Homebrew, and OpenClaw CLI.
+
+## Compose
+
+`docker-compose.yml` starts the `clawhalla` service and mounts `./volumes/openclaw`.
+
+## Healthcheck
+
+The service healthcheck verifies `openclaw --version`.
