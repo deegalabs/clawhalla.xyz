@@ -416,19 +416,40 @@ ask_next_action() {
     case "${choice}" in
         1)
             echo ""
-            info "Entering ClawHalla container..."
-            echo -e "${YELLOW}Type 'exit' to leave the container${NC}"
+            ok "Entering ClawHalla container..."
+            echo -e "${YELLOW}💡 Type 'exit' to leave the container${NC}"
             echo ""
+            
             cd "${INSTALL_DIR}"
             ${COMPOSE_CMD} exec clawhalla bash
+            
+            echo ""
+            ok "Exited container. ClawHalla is still running in the background."
+            echo -e "   ${ARROW} Stop with: ${BLUE}cd ${INSTALL_DIR} && bash scripts/stop.sh${NC}"
+            echo ""
             ;;
         2)
             echo ""
-            info "Entering ClawHalla container and starting onboard..."
-            echo -e "${YELLOW}Follow the OpenClaw onboard wizard to configure your agent${NC}"
-            echo ""
             cd "${INSTALL_DIR}"
+            
+            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${YELLOW}  Starting OpenClaw onboard wizard...${NC}"
+            echo -e "${YELLOW}  This may take a few seconds to load.${NC}"
+            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            echo -e "${CYAN}[⏳]${NC} Loading OpenClaw... (please wait)"
+            echo ""
+            
+            # Run onboard - the loading message above stays visible until OpenClaw prints its banner
             ${COMPOSE_CMD} exec clawhalla bash -c 'source ~/.nvm/nvm.sh && openclaw onboard'
+            
+            echo ""
+            ok "Onboard complete! Your agent is configured."
+            echo ""
+            echo -e "${BOLD}Next steps:${NC}"
+            echo -e "   ${ARROW} Start the gateway: ${BLUE}cd ${INSTALL_DIR} && docker compose exec clawhalla bash${NC}"
+            echo -e "   ${ARROW} Then run: ${BLUE}openclaw gateway${NC}"
+            echo ""
             ;;
         3|"")
             echo ""
