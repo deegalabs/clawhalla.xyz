@@ -407,6 +407,20 @@ main() {
     START_NOW=true
     COMPOSE_CMD="docker compose"
     OS_TYPE=""
+
+    # Check if we have a terminal for interactive input
+    # This is needed when running via: curl ... | bash
+    if [[ ! -t 0 ]]; then
+        if [[ -e /dev/tty ]]; then
+            exec < /dev/tty
+        else
+            echo -e "${RED}[✗]${NC} No terminal available for interactive input."
+            echo "    Please download and run the script manually:"
+            echo "    curl -fsSL https://clawhalla.xyz/install.sh -o install.sh"
+            echo "    bash install.sh"
+            exit 1
+        fi
+    fi
     
     # Run installer
     show_banner
