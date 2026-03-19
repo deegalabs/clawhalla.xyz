@@ -392,7 +392,54 @@ show_success() {
     echo ""
     echo -e "${BOLD}Documentation:${NC} ${BLUE}https://clawhalla.xyz/docs${NC}"
     echo -e "${BOLD}GitHub:${NC}        ${BLUE}https://github.com/deegalabs/clawhalla${NC}"
+}
+
+# =============================================================================
+# POST-INSTALLATION MENU
+# =============================================================================
+ask_next_action() {
+    # Only show menu if container was started
+    if [[ "${START_NOW}" != true ]]; then
+        return
+    fi
+    
     echo ""
+    echo -e "${BOLD}What would you like to do now?${NC}"
+    echo ""
+    echo -e "  ${CYAN}1)${NC} Enter container bash shell"
+    echo -e "  ${CYAN}2)${NC} Enter container and run ${BOLD}openclaw onboard${NC} (recommended for first time)"
+    echo -e "  ${CYAN}3)${NC} Exit installer"
+    echo ""
+    
+    read -r -p "$(echo -e "${CYAN}[?]${NC} Choose an option [1-3]: ")" choice
+    
+    case "${choice}" in
+        1)
+            echo ""
+            info "Entering ClawHalla container..."
+            echo -e "${YELLOW}Type 'exit' to leave the container${NC}"
+            echo ""
+            cd "${INSTALL_DIR}"
+            ${COMPOSE_CMD} exec clawhalla bash
+            ;;
+        2)
+            echo ""
+            info "Entering ClawHalla container and starting onboard..."
+            echo -e "${YELLOW}Follow the OpenClaw onboard wizard to configure your agent${NC}"
+            echo ""
+            cd "${INSTALL_DIR}"
+            ${COMPOSE_CMD} exec clawhalla bash -c 'source ~/.nvm/nvm.sh && openclaw onboard'
+            ;;
+        3|"")
+            echo ""
+            ok "Installation complete. Run the commands above when you're ready!"
+            echo ""
+            ;;
+        *)
+            warn "Invalid option. Exiting installer."
+            echo ""
+            ;;
+    esac
 }
 
 # =============================================================================
@@ -441,6 +488,7 @@ main() {
     
     # Done
     show_success
+    ask_next_action
 }
 
 # Run main function
