@@ -1,0 +1,203 @@
+---
+title: "Claude Max OAuth Setup"
+description: "Use your Claude Max subscription with ClawHalla instead of paying per API call."
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+If you have a **Claude Max** subscription, you can use it with ClawHalla through OAuth authentication instead of paying for API calls separately. This gives you access to Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5 through your existing subscription.
+
+---
+
+## Setup Process
+
+<Steps>
+
+1. **Get your setup token**
+
+   Inside the ClawHalla container, run:
+
+   ```bash
+   claude setup-token
+   ```
+
+   This will output a token. Copy it -- you will need it in step 3.
+
+   <Aside type="note">
+     The `claude` CLI must be installed. It comes pre-installed in the ClawHalla container.
+   </Aside>
+
+2. **Remove old authentication**
+
+   Before adding Claude Max auth, clean up any existing API key authentication:
+
+   **Delete the auth profiles file:**
+   ```bash
+   rm -f ~/.openclaw/agents/main/agent/auth-profiles.json
+   ```
+
+   **Remove `ANTHROPIC_API_KEY` from `.env`:**
+   ```bash
+   # Comment out or delete the line:
+   # ANTHROPIC_API_KEY=sk-ant-...
+   ```
+
+   **Clean `openclaw.json`:**
+
+   Remove any `apiKey` or old auth references from the models section in `~/.openclaw/openclaw.json`.
+
+3. **Add Claude Max authentication**
+
+   ```bash
+   openclaw models auth add
+   ```
+
+   When prompted:
+   - Select **anthropic** as the provider
+   - Select **setup-token** as the authentication method
+   - Paste the token from step 1
+
+4. **Restart the gateway**
+
+   ```bash
+   # Kill the existing gateway
+   kill $(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $2}')
+
+   # Start fresh
+   nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+   ```
+
+   Wait about 15 seconds, then verify:
+
+   ```bash
+   curl -I http://localhost:18789
+   ```
+
+   Check that models are available:
+
+   ```bash
+   openclaw models status
+   ```
+
+   You should see Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5 listed as available.
+
+5. **Set Opus 4.6 as the default model**
+
+   Edit `~/.openclaw/openclaw.json` and configure the models section:
+
+   ```json title="~/.openclaw/openclaw.json"
+   {
+     "models": {
+       "anthropic/claude-opus-4-6": {},
+       "anthropic/claude-sonnet-4-6": {},
+       "anthropic/claude-haiku-4-5": {}
+     },
+     "agents": {
+       "defaults": {
+         "model": {
+           "primary": "anthropic/claude-opus-4-6"
+         },
+         "models": {
+           "anthropic/claude-sonnet-4-6": {},
+           "anthropic/claude-haiku-4-5": {}
+         }
+       }
+     }
+   }
+   ```
+
+</Steps>
+
+---
+
+## Important Notes
+
+### baseUrl must NOT have /v1
+
+When configuring the Anthropic provider, make sure the `baseUrl` does **not** end with `/v1`. The OpenClaw gateway appends the version path automatically.
+
+```json
+// Correct
+"baseUrl": "https://api.anthropic.com"
+
+// Wrong -- will cause 404 errors
+"baseUrl": "https://api.anthropic.com/v1"
+```
+
+### Auth profile format
+
+After setup, your `auth-profiles.json` should look something like this:
+
+```json title="~/.openclaw/agents/main/agent/auth-profiles.json"
+[
+  {
+    "id": "anthropic:setup-token",
+    "provider": "anthropic",
+    "type": "setup-token",
+    "token": "..."
+  }
+]
+```
+
+---
+
+## Troubleshooting
+
+### "Model not available" after setup
+
+1. Verify the auth profile was created:
+   ```bash
+   cat ~/.openclaw/agents/main/agent/auth-profiles.json
+   ```
+
+2. Check gateway logs for authentication errors:
+   ```bash
+   tail -50 /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
+   ```
+
+3. Make sure the gateway was restarted after adding auth:
+   ```bash
+   openclaw status
+   ```
+
+### "401 Unauthorized" errors
+
+- Your setup token may have expired. Run `claude setup-token` again and repeat step 3.
+- Make sure you removed the old `ANTHROPIC_API_KEY` from `.env`. Having both can cause conflicts.
+
+### Gateway refuses to start
+
+Check if the old gateway process is still running:
+
+```bash
+ps aux | grep openclaw-gateway
+```
+
+Kill it and try again:
+
+```bash
+kill $(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $2}')
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+```
+
+### Models show but agent cannot use them
+
+Verify the agent's model assignment in `openclaw.json`:
+
+```bash
+cat ~/.openclaw/openclaw.json | grep -A3 '"model"'
+```
+
+Each agent must reference a model that is available through the configured auth profile.
+
+### Token refresh
+
+Claude Max tokens may need periodic refresh. If you start seeing auth errors after the system has been running for a while:
+
+1. Run `claude setup-token` for a new token
+2. Run `openclaw models auth add` again
+3. Restart the gateway
+
+<Aside type="tip">
+  Claude Max OAuth is the recommended authentication method for ClawHalla. It provides access to all Claude models through your subscription without per-call API charges.
+</Aside>

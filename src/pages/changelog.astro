@@ -1,0 +1,213 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Footer from '../components/Footer.astro';
+
+const versions = [
+  {
+    version: 'v1.0',
+    date: '2026-03-26',
+    title: 'Mission Control Complete',
+    tags: ['feature', 'breaking'],
+    changes: [
+      'Mission Control with all 18 screens: Dashboard, Agents, Squads, Chat, Tasks, Calendar, Memory, Vault, Marketplace, Content, Terminal, Activity, Settings, Analytics, Logs, Autopilot, Notifications, Profile',
+      'All 15 agents fully operational across 4 squads (dev, blockchain, clop-cabinet, core)',
+      'Smart contract integration with Base L2 for marketplace transactions',
+      'Content pipeline: automated social media, blog, and newsletter workflows',
+      'Autopilot mode: agents can work autonomously on scheduled tasks',
+      'Integrated terminal with full agent command interface',
+    ],
+  },
+  {
+    version: 'v0.9',
+    date: '2026-03-20',
+    title: 'Real-time Events & Search',
+    tags: ['feature'],
+    changes: [
+      'Server-Sent Events (SSE) for real-time activity feed',
+      'Live agent status updates pushed to Mission Control',
+      'FTS5 full-text search across memory, tasks, and agent logs',
+      'Activity feed with filters and search',
+    ],
+  },
+  {
+    version: 'v0.8',
+    date: '2026-03-14',
+    title: 'Security Hardening',
+    tags: ['security', 'feature'],
+    changes: [
+      'AES-256-GCM encrypted secret vault for API keys and credentials',
+      'Tyr security auditor agent: automated vulnerability scanning',
+      'Rate limiting and input validation across all API endpoints',
+      'CSP headers and security-first middleware',
+    ],
+  },
+  {
+    version: 'v0.7',
+    date: '2026-03-08',
+    title: 'Agent Factory',
+    tags: ['feature'],
+    changes: [
+      'Agent Factory: create, configure, and deploy custom agents from Mission Control',
+      'Learning system: agents improve based on feedback and task history',
+      'Feedback loop: rate agent responses, corrections feed into training',
+      'Agent skill system with composable skill packs',
+    ],
+  },
+  {
+    version: 'v0.6',
+    date: '2026-03-01',
+    title: 'Web3 Integration',
+    tags: ['feature'],
+    changes: [
+      'Wallet Connect integration for browser wallets',
+      'Base L2 smart contract deployment for marketplace',
+      'On-chain pack licensing and royalty distribution',
+      'Crypto payment option for marketplace purchases',
+    ],
+  },
+  {
+    version: 'v0.5',
+    date: '2026-02-22',
+    title: 'Marketplace Launch',
+    tags: ['feature'],
+    changes: [
+      'Marketplace UI for browsing and installing squad packs',
+      'Pack system: bundle agents, skills, and configs into distributable packs',
+      'Community pack submissions and review pipeline',
+      'Pack versioning and dependency management',
+    ],
+  },
+  {
+    version: 'v0.4',
+    date: '2026-02-15',
+    title: 'Dashboard & Mission Control',
+    tags: ['feature'],
+    changes: [
+      'Mission Control dashboard with 12 initial screens',
+      'Calendar view for scheduled tasks and agent activity',
+      'Agent chat interface with conversation history',
+      'Task board with drag-and-drop kanban',
+    ],
+  },
+  {
+    version: 'v0.3',
+    date: '2026-02-08',
+    title: 'Mission Control MVP',
+    tags: ['feature'],
+    changes: [
+      'SQLite database with Drizzle ORM for persistent storage',
+      'REST API for agent management and task operations',
+      'Basic web interface for monitoring agent status',
+      'Memory persistence across agent restarts',
+    ],
+  },
+  {
+    version: 'v0.2',
+    date: '2026-01-25',
+    title: 'Squad System',
+    tags: ['feature', 'breaking'],
+    changes: [
+      'Squad system: organize agents into specialized teams',
+      'All 15 agents trained with SOUL.md, AGENTS.md, and IDENTITY.md',
+      'AI-AGIL methodology for sprint planning and task management',
+      'Inter-agent communication via Chief orchestrator',
+      'Shared boards and memory across squad members',
+    ],
+  },
+  {
+    version: 'v0.1',
+    date: '2026-01-10',
+    title: 'Docker MVP',
+    tags: ['feature'],
+    changes: [
+      'Initial Docker-based deployment with docker-compose',
+      'Setup script (setup.sh) for one-command installation',
+      'OpenClaw gateway integration with Claude models',
+      'Basic workspace structure with IDENTITY.md and USER.md',
+      'clawhalla.xyz landing page with Astro + Starlight',
+    ],
+  },
+];
+
+const tagColors: Record<string, string> = {
+  feature: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  fix: 'bg-green-500/20 text-green-400 border-green-500/30',
+  breaking: 'bg-red-500/20 text-red-400 border-red-500/30',
+  security: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+};
+---
+
+<Layout title="Changelog — ClawHalla" description="ClawHalla release history. Track every feature, fix, and improvement from v0.1 to v1.0.">
+  <main>
+    <!-- Hero -->
+    <section class="py-20 px-4 bg-dark">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="font-heading text-4xl md:text-5xl font-bold mb-4">
+          <span class="text-primary">Change</span>log
+        </h1>
+        <p class="text-gray-400 max-w-2xl mx-auto">
+          Every feature, fix, and improvement — from Docker MVP to Mission Control.
+        </p>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="py-12 px-4 bg-dark-50">
+      <div class="max-w-4xl mx-auto">
+        <div class="relative">
+          <!-- Vertical line -->
+          <div class="absolute left-4 md:left-8 top-0 bottom-0 w-px bg-dark-200"></div>
+
+          {versions.map((v, i) => (
+            <div class="relative pl-12 md:pl-20 pb-12 last:pb-0">
+              <!-- Dot -->
+              <div class={`absolute left-2.5 md:left-6.5 top-1 w-3 h-3 rounded-full border-2 ${
+                i === 0 ? 'bg-primary border-primary' : 'bg-dark-50 border-dark-300'
+              }`}></div>
+
+              <!-- Version header -->
+              <div class="flex flex-wrap items-center gap-3 mb-3">
+                <h2 class="font-heading text-xl md:text-2xl font-bold text-gray-100">{v.version}</h2>
+                <span class="text-xs font-mono text-gray-500">{v.date}</span>
+                {v.tags.map((tag) => (
+                  <span class={`text-xs font-mono px-2 py-0.5 rounded-full border ${tagColors[tag] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <h3 class="text-lg text-primary font-semibold mb-3">{v.title}</h3>
+
+              <ul class="space-y-2">
+                {v.changes.map((change) => (
+                  <li class="flex items-start gap-2 text-sm text-gray-400">
+                    <span class="text-primary mt-1 shrink-0">&#x25B8;</span>
+                    <span>{change}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 px-4 bg-dark text-center">
+      <div class="max-w-2xl mx-auto">
+        <p class="text-gray-400 mb-6">
+          Want to see what's coming next? Check the
+          <a href="https://github.com/deegalabs/clawhalla/issues" target="_blank" rel="noopener" class="text-primary hover:underline">roadmap on GitHub</a>.
+        </p>
+        <a
+          href="/#quick-start"
+          class="inline-block px-8 py-3 bg-primary text-dark font-semibold rounded-lg hover:bg-primary-300 transition-all hover:shadow-lg hover:shadow-primary/25"
+        >
+          Get Started
+        </a>
+      </div>
+    </section>
+
+    <Footer />
+  </main>
+</Layout>

@@ -1,16 +1,401 @@
 ---
-title: Docker
-description: Docker image and compose reference.
+title: "Docker"
+description: "Complete Docker reference for ClawHalla: image layers, compose services, volumes, and custom builds."
 ---
 
-## Image
+import { Aside } from '@astrojs/starlight/components';
 
-`Dockerfile` builds an Ubuntu-based image with Node, pnpm, Homebrew, and OpenClaw CLI.
+ClawHalla runs inside Docker containers to provide a consistent, reproducible environment regardless of the host OS. This reference covers the image architecture, compose services, and customization options.
 
-## Compose
+---
 
-`docker-compose.yml` starts the `clawhalla` service and mounts `./volumes/openclaw`.
+## Image Details
 
-## Healthcheck
+The ClawHalla Docker image is built on **Ubuntu 24.04** and includes:
 
-The service healthcheck verifies `openclaw --version`.
+| Component | Version | Purpose |
+|-----------|---------|---------|
+| Ubuntu | 24.04 LTS | Base OS |
+| Node.js | 24 (via nvm) | Runtime for OpenClaw and MC |
+| pnpm | Latest (via corepack) | Package manager |
+| Python 3 | System default | Scripts and tools |
+| Zsh | Latest | Default shell |
+| Oh My Zsh | Latest | Shell framework |
+| Spaceship | Latest | Prompt theme |
+| Zinit | Latest | Plugin manager |
+| Homebrew | Latest (Linux) | Additional package management |
+| OpenClaw CLI | Latest (via pnpm) | Agent framework |
+| Git | System default | Version control |
+| curl, wget | System default | HTTP tools |
+
+---
+
+## Dockerfile Layers Explained
+
+The Dockerfile builds the image in logical layers:
+
+### 1. Base system
+
+```dockerfile
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get upgrade -y
+```
+
+Starts from a clean Ubuntu 24.04 image and updates all packages.
+
+### 2. System packages
+
+```dockerfile
+RUN apt-get install -y \
+    git curl build-essential adduser sudo \
+    ca-certificates procps python3 python3-pip \
+    python3-venv zsh wget locales \
+    && locale-gen en_US.UTF-8
+```
+
+Installs essential tools for development, shell, and runtime.
+
+### 3. User creation
+
+```dockerfile
+ARG CLAWDBOT_PASSWORD=clawdbot
+RUN adduser --gecos '' --disabled-password clawdbot \
+    && echo "clawdbot:${CLAWDBOT_PASSWORD}" | chpasswd
+RUN echo 'clawdbot ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/clawdbot
+```
+
+Creates the `clawdbot` user with sudo access. The password is configurable via build arg or `.env`.
+
+### 4. Node.js and pnpm
+
+```dockerfile
+RUN bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash' \
+    && bash -c '. ~/.nvm/nvm.sh && nvm install 24 && corepack enable pnpm'
+```
+
+Installs NVM, Node 24, and enables pnpm through Corepack.
+
+### 5. Homebrew
+
+```dockerfile
+RUN bash -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+```
+
+Installs Homebrew for Linux, enabling easy installation of additional tools.
+
+### 6. OpenClaw CLI
+
+```dockerfile
+RUN bash -c '. ~/.nvm/nvm.sh && pnpm add -g openclaw'
+```
+
+Installs the OpenClaw CLI globally. The onboarding wizard runs manually after container start.
+
+### 7. Shell environment
+
+```dockerfile
+# Oh My Zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+# Spaceship theme
+RUN git clone https://github.com/spaceship-prompt/spaceship-prompt.git \
+    "$HOME/.oh-my-zsh/custom/themes/spaceship-prompt" --depth=1
+
+# Zinit plugin manager
+RUN mkdir -p "$HOME/.zinit" \
+    && git clone https://github.com/zdharma-continuum/zinit "$HOME/.zinit/bin" --depth=1
+```
+
+Sets up a productive zsh environment with syntax highlighting, autosuggestions, and completions.
+
+### 8. Entrypoint
+
+```dockerfile
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/.zshrc /home/clawdbot/.zshrc.default
+RUN chsh -s /bin/zsh clawdbot
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["sleep", "infinity"]
+```
+
+The entrypoint script creates required directories and fixes permissions. The container runs indefinitely, waiting for interactive use.
+
+---
+
+## docker-compose.yml
+
+ClawHalla uses Docker Compose to manage two services:
+
+```yaml title="docker-compose.yml"
+version: "3.8"
+
+services:
+  clawhalla:
+    build: .
+    container_name: clawhalla
+    hostname: clawhalla
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "18789:18789"    # OpenClaw Gateway
+      - "3000:3000"      # Mission Control (internal)
+    volumes:
+      - ./volumes/openclaw:/home/clawdbot/.openclaw
+    env_file:
+      - .env
+
+  mission-control:
+    build:
+      context: ./apps/mission-control
+      dockerfile: Dockerfile
+    container_name: clawhalla-mc
+    restart: unless-stopped
+    ports:
+      - "3333:3000"      # Mission Control (external)
+    environment:
+      - GATEWAY_URL=http://clawhalla:18789
+      - GATEWAY_TOKEN=${GATEWAY_TOKEN}
+    depends_on:
+      - clawhalla
+```
+
+### Services
+
+| Service | Container Name | Purpose |
+|---------|---------------|---------|
+| `clawhalla` | `clawhalla` | Main container with OpenClaw, agents, and gateway |
+| `mission-control` | `clawhalla-mc` | Web dashboard (Next.js) |
+
+---
+
+## Volumes and Persistence
+
+All persistent data lives in the `volumes/` directory on the host:
+
+```
+volumes/
+└── openclaw/           # Mounted at /home/clawdbot/.openclaw
+    ├── openclaw.json   # Runtime config
+    ├── agents/         # Agent directories and sessions
+    ├── workspace/      # Agent workspace files
+    ├── cron/           # Cron job definitions and run history
+    ├── skills/         # Managed skills
+    ├── hooks/          # Managed hooks
+    └── logs/           # Command logs
+```
+
+<Aside type="tip">
+  The `volumes/openclaw` directory is your most important data. Back it up regularly. Everything else can be rebuilt from the Docker image.
+</Aside>
+
+### Volume permissions
+
+The entrypoint script ensures correct ownership:
+
+```bash
+sudo mkdir -p "${OPENCLAW_DIR}"
+sudo chown -R clawdbot:clawdbot "${OPENCLAW_DIR}"
+```
+
+If you see permission errors, fix them manually:
+
+```bash
+sudo chown -R 1000:1000 volumes/openclaw
+```
+
+---
+
+## Port Mapping
+
+| Host Port | Container Port | Service |
+|-----------|---------------|---------|
+| `18789` | `18789` | OpenClaw Gateway (WebSocket + HTTP) |
+| `3000` | `3000` | Mission Control (internal, on clawhalla container) |
+| `3333` | `3000` | Mission Control (external, on MC container) |
+
+### Changing ports
+
+To change the gateway port:
+
+1. Edit `docker-compose.yml`:
+   ```yaml
+   ports:
+     - "19000:18789"
+   ```
+
+2. Update `.env`:
+   ```bash
+   OPENCLAW_GATEWAY_PORT=18789  # Internal port stays the same
+   ```
+
+3. Rebuild: `docker compose up -d --build`
+
+---
+
+## Health Checks
+
+### Gateway health
+
+```bash
+# From host
+curl http://localhost:18789
+
+# From inside container
+curl -I http://localhost:18789
+```
+
+### Mission Control health
+
+```bash
+# From host
+curl http://localhost:3000/api/health
+# or
+curl http://localhost:3333/api/health
+
+# Response
+{"status":"ok","timestamp":"2026-03-26T10:00:00.000Z"}
+```
+
+### Container health
+
+```bash
+# Check container status
+docker compose ps
+
+# Check container resource usage
+docker stats clawhalla clawhalla-mc
+
+# View container logs
+docker compose logs -f clawhalla
+docker compose logs -f mission-control
+```
+
+---
+
+## Multi-Container Setup
+
+For production deployments, you may want to separate services:
+
+```yaml title="docker-compose.prod.yml"
+version: "3.8"
+
+services:
+  clawhalla:
+    build: .
+    container_name: clawhalla
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "18789:18789"
+    volumes:
+      - openclaw-data:/home/clawdbot/.openclaw
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+
+  mission-control:
+    build:
+      context: ./apps/mission-control
+      dockerfile: Dockerfile
+    container_name: clawhalla-mc
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GATEWAY_URL=http://clawhalla:18789
+      - GATEWAY_TOKEN=${GATEWAY_TOKEN}
+      - NODE_ENV=production
+    depends_on:
+      - clawhalla
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+
+volumes:
+  openclaw-data:
+    driver: local
+```
+
+Run with: `docker compose -f docker-compose.prod.yml up -d`
+
+---
+
+## Building Custom Images
+
+### Extending the base image
+
+Create a new Dockerfile that builds on top of ClawHalla:
+
+```dockerfile title="Dockerfile.custom"
+FROM clawhalla:latest
+
+USER clawdbot
+
+# Install additional tools
+RUN bash -c '. ~/.nvm/nvm.sh && pnpm add -g typescript tsx'
+
+# Add custom scripts
+COPY scripts/custom-setup.sh /home/clawdbot/custom-setup.sh
+
+# Add custom workspace files
+COPY workspace-template/ /home/clawdbot/.openclaw/workspace/
+```
+
+### Building with custom arguments
+
+```bash
+docker compose build \
+  --build-arg CLAWDBOT_PASSWORD=my-secure-password
+```
+
+### Using a different base image
+
+To use a different Ubuntu version or base:
+
+```dockerfile
+FROM ubuntu:22.04
+# ... rest of Dockerfile
+```
+
+<Aside type="note">
+  Node 24 requires a relatively recent glibc. Ubuntu 22.04 works, but older distributions may not.
+</Aside>
+
+---
+
+## Useful Docker Commands
+
+```bash
+# Enter the container
+docker compose exec clawhalla zsh
+
+# View real-time logs
+docker compose logs -f clawhalla
+
+# Restart a service
+docker compose restart clawhalla
+
+# Rebuild and restart
+docker compose up -d --build
+
+# Stop everything
+docker compose down
+
+# Stop and remove volumes (destructive!)
+docker compose down -v
+
+# Check disk usage
+docker system df
+
+# Clean unused images
+docker image prune -f
+```

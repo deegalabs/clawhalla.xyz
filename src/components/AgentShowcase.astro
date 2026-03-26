@@ -1,0 +1,122 @@
+---
+const tiers = {
+  T0: { label: 'Platform', color: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/5' },
+  T1: { label: 'Executive', color: 'text-primary', border: 'border-primary/30', bg: 'bg-primary/5' },
+  T2: { label: 'Management', color: 'text-blue-400', border: 'border-blue-400/30', bg: 'bg-blue-400/5' },
+  T3: { label: 'Execution', color: 'text-green-400', border: 'border-green-400/30', bg: 'bg-green-400/5' },
+};
+
+const agents = [
+  { id: 'main', name: 'Claw', emoji: '\u{1F99E}', role: 'Platform Chief', tier: 'T0' as const },
+  { id: 'odin', name: 'Odin', emoji: '\u{1F441}', role: 'Strategic Overseer', tier: 'T1' as const },
+  { id: 'vidar', name: 'Vidar', emoji: '\u2694\uFE0F', role: 'Dev Lead', tier: 'T1' as const },
+  { id: 'saga', name: 'Saga', emoji: '\u{1F52E}', role: 'Content Director', tier: 'T1' as const },
+  { id: 'thor', name: 'Thor', emoji: '\u26A1', role: 'Backend Engineer', tier: 'T2' as const },
+  { id: 'frigg', name: 'Frigg', emoji: '\u{1F451}', role: 'Frontend Engineer', tier: 'T2' as const },
+  { id: 'tyr', name: 'Tyr', emoji: '\u2696\uFE0F', role: 'QA Lead', tier: 'T2' as const },
+  { id: 'freya', name: 'Freya', emoji: '\u2728', role: 'UX Designer', tier: 'T2' as const },
+  { id: 'heimdall', name: 'Heimdall', emoji: '\u{1F441}\u200D\u{1F5E8}', role: 'Security & DevOps', tier: 'T2' as const },
+  { id: 'volund', name: 'Volund', emoji: '\u{1F527}', role: 'Smart Contract Dev', tier: 'T3' as const },
+  { id: 'sindri', name: 'Sindri', emoji: '\u{1F525}', role: 'Blockchain Auditor', tier: 'T3' as const },
+  { id: 'skadi', name: 'Skadi', emoji: '\u2744\uFE0F', role: 'Data Analyst', tier: 'T3' as const },
+  { id: 'mimir', name: 'Mimir', emoji: '\u{1F9E0}', role: 'Research Agent', tier: 'T3' as const },
+  { id: 'bragi', name: 'Bragi', emoji: '\u{1F3AD}', role: 'Content Writer', tier: 'T3' as const },
+  { id: 'loki', name: 'Loki', emoji: '\u{1F98A}', role: 'Automation & Scripts', tier: 'T3' as const },
+];
+---
+
+<section class="py-20 sm:py-28 px-4 bg-dark-50">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
+      <span class="text-primary">Meet the</span> Team
+    </h2>
+    <p class="text-gray-400 text-center mb-6 max-w-2xl mx-auto">
+      15 specialized AI agents organized in a Norse mythology hierarchy.
+      Each one trained for their domain.
+    </p>
+
+    <!-- Tier legend -->
+    <div class="flex flex-wrap justify-center gap-4 mb-12">
+      {Object.entries(tiers).map(([key, tier]) => (
+        <span class={`text-xs font-mono px-3 py-1 rounded-full border ${tier.border} ${tier.color} ${tier.bg}`}>
+          {key}: {tier.label}
+        </span>
+      ))}
+    </div>
+
+    <!-- Hierarchy: T0 -->
+    <div class="flex justify-center mb-3">
+      {agents.filter(a => a.tier === 'T0').map((agent) => {
+        const tier = tiers[agent.tier];
+        return (
+          <div class={`agent-card w-40 p-4 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/10`}>
+            <div class="text-4xl mb-2">{agent.emoji}</div>
+            <h3 class="font-heading text-lg font-bold text-gray-100">{agent.name}</h3>
+            <p class="text-xs text-gray-400 mt-1">{agent.role}</p>
+            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Connector line T0 → T1 -->
+    <div class="flex justify-center mb-3">
+      <div class="w-px h-8 bg-gradient-to-b from-yellow-400/40 to-primary/40"></div>
+    </div>
+
+    <!-- T1 Row -->
+    <div class="flex justify-center gap-4 mb-3 flex-wrap">
+      {agents.filter(a => a.tier === 'T1').map((agent) => {
+        const tier = tiers[agent.tier];
+        return (
+          <div class={`agent-card w-36 sm:w-40 p-4 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/10`}>
+            <div class="text-3xl mb-2">{agent.emoji}</div>
+            <h3 class="font-heading text-base font-bold text-gray-100">{agent.name}</h3>
+            <p class="text-xs text-gray-400 mt-1">{agent.role}</p>
+            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Connector line T1 → T2 -->
+    <div class="flex justify-center mb-3">
+      <div class="w-px h-8 bg-gradient-to-b from-primary/40 to-blue-400/40"></div>
+    </div>
+
+    <!-- T2 Row -->
+    <div class="flex justify-center gap-3 mb-3 flex-wrap">
+      {agents.filter(a => a.tier === 'T2').map((agent) => {
+        const tier = tiers[agent.tier];
+        return (
+          <div class={`agent-card w-32 sm:w-36 p-3 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-400/10`}>
+            <div class="text-2xl mb-1">{agent.emoji}</div>
+            <h3 class="font-heading text-sm font-bold text-gray-100">{agent.name}</h3>
+            <p class="text-[11px] text-gray-400 mt-1">{agent.role}</p>
+            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Connector line T2 → T3 -->
+    <div class="flex justify-center mb-3">
+      <div class="w-px h-8 bg-gradient-to-b from-blue-400/40 to-green-400/40"></div>
+    </div>
+
+    <!-- T3 Row -->
+    <div class="flex justify-center gap-3 flex-wrap">
+      {agents.filter(a => a.tier === 'T3').map((agent) => {
+        const tier = tiers[agent.tier];
+        return (
+          <div class={`agent-card w-28 sm:w-32 p-3 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-green-400/10`}>
+            <div class="text-xl mb-1">{agent.emoji}</div>
+            <h3 class="font-heading text-sm font-bold text-gray-100">{agent.name}</h3>
+            <p class="text-[10px] text-gray-400 mt-1">{agent.role}</p>
+            <span class={`inline-block text-[10px] font-mono mt-1.5 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>

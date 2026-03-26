@@ -1,53 +1,65 @@
 ---
 const features = [
   {
-    icon: '⚡',
-    title: 'One Command Setup',
-    description: 'No Node.js installation, no pnpm, no dependency management. Just Docker and go.',
+    icon: '\u{1F916}',
+    title: '15 Pre-trained Agents',
+    description: 'A full Norse mythology hierarchy — from Claw the Chief to specialized execution agents. Each one trained for their domain.',
   },
   {
-    icon: '🛡️',
-    title: 'Docker Isolated',
-    description: 'Your agent runs in a clean container. No conflicts with your system, easy to reset.',
+    icon: '\u{1F3AF}',
+    title: 'Mission Control',
+    description: '18-screen dashboard with task boards, agent chat, virtual office, and real-time monitoring of your entire AI workforce.',
   },
   {
-    icon: '🤖',
-    title: 'OpenClaw Powered',
-    description: 'Full access to OpenClaw CLI, Gateway, and the entire agent ecosystem.',
+    icon: '\u{1F4DD}',
+    title: 'Content Pipeline',
+    description: 'Automated research-to-publish workflow. Agents research, draft, review, and publish content across platforms.',
   },
   {
-    icon: '📦',
-    title: 'Persistent Data',
-    description: 'Your agent configurations survive restarts. Edit files locally, changes sync automatically.',
+    icon: '\u{1F4DC}',
+    title: 'Smart Contracts',
+    description: 'Agent marketplace on Base L2. NFT-based licensing, on-chain squad packs, and decentralized agent economy.',
   },
   {
-    icon: '🔧',
-    title: 'Developer Friendly',
-    description: 'Open source, well documented, and easy to customize for your needs.',
+    icon: '\u26A1',
+    title: 'Autopilot Mode',
+    description: 'Set goals and walk away. Agents autonomously break down objectives, assign work, and execute to completion.',
   },
   {
-    icon: '🚀',
-    title: 'Production Ready',
-    description: 'Same setup works for development and production. Deploy anywhere Docker runs.',
+    icon: '\u{1F512}',
+    title: 'Secret Vault',
+    description: 'AES-256-GCM encrypted storage for all sensitive data. Zero-knowledge architecture. Your secrets never leave the container.',
+  },
+  {
+    icon: '\u{1F4E1}',
+    title: 'Real-time Events',
+    description: 'Server-Sent Events for live activity monitoring. Watch agents think, plan, and execute in real-time from any screen.',
+  },
+  {
+    icon: '\u{1F310}',
+    title: 'Open Source',
+    description: 'MIT licensed, community-driven development. Fork it, extend it, contribute back. Personas are .md files — no vendor lock-in.',
   },
 ];
 ---
 
-<section class="py-20 px-4 bg-dark-50">
+<section class="py-20 sm:py-28 px-4 bg-dark-50">
   <div class="max-w-6xl mx-auto">
     <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
-      <span class="text-primary">❯</span> Why ClawHalla
+      <span class="text-primary">Enterprise</span> Features
     </h2>
-    <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-      OpenClaw is powerful but setup can be complex. ClawHalla removes all friction.
+    <p class="text-gray-400 text-center mb-14 max-w-2xl mx-auto">
+      Everything you need to run an autonomous AI operation, out of the box.
     </p>
 
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {features.map((feature) => (
-        <div class="p-6 bg-dark rounded-xl border border-dark-200 hover:border-primary/30 transition-colors">
-          <div class="text-4xl mb-4">{feature.icon}</div>
-          <h3 class="font-heading text-xl font-bold text-gray-100 mb-2">{feature.title}</h3>
-          <p class="text-gray-400">{feature.description}</p>
+        <div class="group p-6 bg-dark rounded-xl border border-dark-200 hover:border-primary/30 transition-all duration-300">
+          <div class="text-3xl mb-4">{feature.icon}</div>
+          <h3 class="font-heading text-base font-bold text-gray-100 mb-2 group-hover:text-primary transition-colors">
+            {feature.title}
+          </h3>
+          <p class="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
         </div>
       ))}
     </div>

@@ -1,30 +1,352 @@
 ---
-title: Your First Agent
-description: Bring your first OpenClaw agent online with ClawHalla.
+title: "Your First Agent"
+description: "Create, configure, and test your first custom AI agent in ClawHalla."
 ---
 
-## Steps
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-1. Start ClawHalla:
+Every AI agent in ClawHalla is defined by a set of markdown files that shape its personality, instructions, and capabilities. This guide walks you through creating a custom agent from scratch, testing it, and integrating it into your organization.
 
-```bash
-bash scripts/start.sh
+---
+
+## Understanding Agent Structure
+
+An agent's workspace is a directory containing markdown files that are injected into the model context at the start of every session:
+
+```
+~/.openclaw/workspace/squads/your-squad/your-agent/
+├── AGENTS.md       # Operating instructions -- what to do, how to behave
+├── SOUL.md         # Personality, values, tone of voice
+├── IDENTITY.md     # Name, role, emoji, model assignment
+├── USER.md         # Profile of the human they serve
+├── TOOLS.md        # Notes about available tools and environment
+├── HEARTBEAT.md    # Periodic check-in tasks (optional)
+├── BOOTSTRAP.md    # One-time first-run setup (deleted after use)
+├── skills/         # Domain-specific knowledge files
+└── memory/         # Daily session logs
 ```
 
-2. Enter the container:
+### What each file does
 
-```bash
-docker compose exec clawhalla bash
+**IDENTITY.md** defines who the agent is:
+```markdown title="IDENTITY.md"
+# IDENTITY.md
+
+- **Name:** Atlas
+- **Role:** DevOps Engineer (Tier 3 -- Execution)
+- **Emoji:** ⚙️
+- **Model:** `anthropic/claude-sonnet-4-6`
+- **Language:** English
 ```
 
-3. Run onboarding:
+**SOUL.md** defines how the agent thinks and communicates:
+```markdown title="SOUL.md"
+# SOUL.md
 
-```bash
-openclaw onboard
+## Core Truths
+- Be precise. Infrastructure has no room for "probably."
+- Automate everything that runs more than twice.
+- Security is not optional -- it is the first requirement.
+
+## Vibe
+Calm, methodical, thorough. Explains decisions clearly.
+Prefers shell commands over manual steps.
 ```
 
-4. Open dashboard:
+**AGENTS.md** defines what the agent does and its rules:
+```markdown title="AGENTS.md"
+# AGENTS.md
+
+## Your Job
+You manage CI/CD pipelines, Docker infrastructure, and deployment scripts.
+
+## Session Startup
+1. Read SOUL.md and IDENTITY.md
+2. Check memory/ for recent context
+3. Review any assigned tasks
+
+## Rules
+- Never run destructive commands without confirmation
+- Always create backups before modifying configs
+- Log all infrastructure changes to memory/
+```
+
+---
+
+## Creating an Agent Step by Step
+
+<Steps>
+
+1. **Plan your agent**
+
+   Decide on:
+   - **Name and role:** What does this agent do?
+   - **Tier:** Execution (3), Management (2), or Executive (1)?
+   - **Model:** Opus for critical decisions, Sonnet for specialist work, Haiku for bulk tasks
+   - **Squad:** Which team does it belong to?
+
+2. **Create the workspace directory**
+
+   ```bash
+   mkdir -p ~/.openclaw/workspace/squads/dev/atlas
+   cd ~/.openclaw/workspace/squads/dev/atlas
+   ```
+
+3. **Write IDENTITY.md**
+
+   ```bash
+   cat > IDENTITY.md << 'EOF'
+   # IDENTITY.md -- Who Am I?
+
+   - **Name:** Atlas
+   - **Role:** DevOps Engineer (Tier 3 -- Execution)
+   - **Emoji:** ⚙️
+   - **Model:** `anthropic/claude-sonnet-4-6`
+   - **Language:** English
+
+   ## Role in the System
+   I manage infrastructure, CI/CD, and deployments.
+   I report to the Dev Squad Chief (Odin).
+   EOF
+   ```
+
+4. **Write SOUL.md**
+
+   ```bash
+   cat > SOUL.md << 'EOF'
+   # SOUL.md
+
+   ## Core Truths
+   - Infrastructure is code. Treat it with the same rigor.
+   - Automate repetitive tasks. Manual steps are tech debt.
+   - Document everything. Future-you will thank present-you.
+
+   ## Boundaries
+   - Never expose secrets in logs or outputs
+   - Always ask before destructive operations
+   - Use `trash` over `rm` when possible
+
+   ## Vibe
+   Calm and methodical. Explains decisions with context.
+   Prefers battle-tested tools over bleeding-edge.
+   EOF
+   ```
+
+5. **Write AGENTS.md**
+
+   ```bash
+   cat > AGENTS.md << 'EOF'
+   # AGENTS.md -- Operating Instructions
+
+   ## Session Startup
+   1. Read SOUL.md and IDENTITY.md
+   2. Read memory/ for recent context
+   3. Check for assigned tasks
+
+   ## Responsibilities
+   - Docker container management
+   - CI/CD pipeline configuration
+   - Deployment scripts and automation
+   - Server monitoring and alerting
+   - Backup management
+
+   ## Rules
+   - Report to Odin (Dev Chief) for task assignments
+   - Move tasks through: backlog → in_progress → review → done
+   - Never deploy without approval
+   - Log significant actions to memory/YYYY-MM-DD.md
+   EOF
+   ```
+
+6. **Create supporting files**
+
+   ```bash
+   # USER.md -- who you're helping
+   cat > USER.md << 'EOF'
+   # USER.md
+   Your human is Daniel, the CEO. Be respectful of his time.
+   EOF
+
+   # TOOLS.md -- environment notes
+   cat > TOOLS.md << 'EOF'
+   # TOOLS.md
+   - Docker is available via `docker` command
+   - SSH keys are in ~/.ssh/
+   - GitHub CLI is available via `gh`
+   EOF
+
+   # Create memory directory
+   mkdir -p memory skills
+   ```
+
+7. **Register the agent with OpenClaw**
+
+   ```bash
+   openclaw agents add atlas
+   ```
+
+   Or add it manually to `~/.openclaw/openclaw.json`:
+
+   ```json
+   {
+     "agents": {
+       "list": [
+         {
+           "id": "atlas",
+           "name": "Atlas",
+           "model": "anthropic/claude-sonnet-4-6",
+           "workspace": "~/.openclaw/workspace/squads/dev/atlas",
+           "agentDir": "~/.openclaw/agents/atlas/agent"
+         }
+       ]
+     }
+   }
+   ```
+
+8. **Create the agent directory**
+
+   ```bash
+   mkdir -p ~/.openclaw/agents/atlas/agent
+   mkdir -p ~/.openclaw/agents/atlas/sessions
+   ```
+
+</Steps>
+
+---
+
+## Using the Agent Factory (Mission Control)
+
+If you prefer a visual interface, Mission Control includes an **Agent Factory** that automates agent creation.
+
+1. Open Mission Control at `http://localhost:3000`
+2. Navigate to **Factory** in the sidebar
+3. Browse available persona templates (executive, management, execution tiers)
+4. Select a template and customize the name, role, model, and squad
+5. Click **Create** -- the factory will:
+   - Generate all workspace files from the template
+   - Register the agent in `openclaw.json`
+   - Add it to `org_structure.yaml`
+   - Create the agent directory structure
+
+The factory reads persona templates from `~/.openclaw/workspace/personas/`:
+
+```
+personas/
+├── executive/
+│   ├── cto.md
+│   └── blockchain-architect.md
+├── management/
+│   ├── tech-lead.md
+│   └── coordinator.md
+└── execution/
+    ├── senior-dev.md
+    ├── qa-observer.md
+    └── devops.md
+```
+
+You can add your own templates to these directories.
+
+---
+
+## Testing Your Agent
+
+### Via CLI
+
+Send a direct message to your agent:
 
 ```bash
-openclaw dashboard
+openclaw agent --agent atlas -m "What is your name and role?"
 ```
+
+The agent will read its workspace files and respond in character.
+
+### Via Mission Control Chat
+
+1. Open Mission Control at `http://localhost:3000`
+2. Go to the **Office** page
+3. Select your agent from the list
+4. Type a message in the chat input
+
+### Verify bootstrap files are loaded
+
+Send a test message that requires knowledge from the workspace files:
+
+```bash
+openclaw agent --agent atlas -m "Read your IDENTITY.md and tell me your emoji and tier."
+```
+
+If the agent responds correctly with its emoji and tier, the workspace is properly configured.
+
+---
+
+## Adding to org_structure.yaml
+
+To integrate your agent into the organizational hierarchy, add it to `~/.openclaw/workspace/company/org_structure.yaml`:
+
+```yaml title="org_structure.yaml"
+org:
+  agents:
+    atlas:
+      id: atlas
+      tier: 3
+      role: devops_engineer
+      model: claude-sonnet-4-6
+      reports_to: thor
+      squad: dev_squad
+      skills:
+        - docker
+        - ci-cd
+        - monitoring
+```
+
+And add it to the squad's members list:
+
+```yaml
+  squads:
+    dev_squad:
+      chief: odin
+      lead: thor
+      members:
+        - freya
+        - heimdall
+        - volund
+        - atlas  # Your new agent
+      domain: Full-stack development
+```
+
+---
+
+## Assigning to a Squad
+
+Squads in ClawHalla follow a hierarchy:
+
+```
+Chief (Tier 1) -- Orchestrates, makes architectural decisions
+  └── Lead (Tier 2) -- Manages day-to-day, routes tasks
+       ├── Agent A (Tier 3) -- Executes specific tasks
+       ├── Agent B (Tier 3)
+       └── Agent C (Tier 3)
+```
+
+Your agent's `reports_to` field determines who reviews their work. The squad chief receives escalations and approves outputs.
+
+### Communication between agents
+
+Agents communicate through the `sessions_send` tool:
+
+```typescript
+// Atlas reporting to Thor
+sessions_send({
+  sessionKey: "thor-session-key",
+  message: "Task DEV-042 completed. Docker config updated. Ready for review."
+});
+```
+
+---
+
+## Next Steps
+
+- Add skills to your agent's `skills/` directory for domain knowledge
+- Configure heartbeats for periodic autonomous checks
+- Create cron jobs for scheduled tasks
+- See the [Customization guide](/guides/customization/) for advanced configuration

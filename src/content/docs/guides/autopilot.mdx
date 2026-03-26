@@ -1,0 +1,276 @@
+---
+title: "Autopilot"
+description: "Configure autonomous goal-driven execution for your ClawHalla agents."
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Autopilot is ClawHalla's mode for **autonomous goal-driven execution**. Instead of responding to individual messages, an agent operates on a schedule -- working toward business goals, making decisions, and producing results with minimal human intervention.
+
+<Aside type="caution">
+  Autopilot does not bypass the approval system. Any action that leaves the system (publishing, deploying, sending emails) still requires human approval through the gate system.
+</Aside>
+
+---
+
+## What is Autopilot?
+
+In normal mode, agents are reactive -- they respond when you message them. In Autopilot mode, agents become proactive:
+
+| Aspect | Normal Mode | Autopilot Mode |
+|--------|-------------|----------------|
+| **Trigger** | User message | Cron schedule |
+| **Scope** | Single task | Business goal |
+| **Duration** | One session | Recurring sessions |
+| **Initiative** | Responds to requests | Identifies and executes work |
+| **Approval** | Per-action | Gate system for external actions |
+
+Autopilot is powered by a combination of:
+- **Cron jobs** for scheduling
+- **Heartbeats** for context awareness
+- **HEARTBEAT.md** for task checklists
+- **Memory files** for continuity across sessions
+- **Approval gates** for safety
+
+---
+
+## Setting Business Goals
+
+Before enabling Autopilot, define what the agent should achieve. Write goals in the agent's `HEARTBEAT.md` or a dedicated goals file:
+
+```markdown title="HEARTBEAT.md"
+# Autopilot Goals
+
+## This Week
+- [ ] Publish 3 LinkedIn posts (Mon, Wed, Fri)
+- [ ] Research 5 trending AI topics and save summaries
+- [ ] Monitor post engagement and compile weekly report
+- [ ] Respond to all LinkedIn comments within 4 hours
+
+## Ongoing
+- [ ] Keep RSS feeds monitored for breaking news
+- [ ] Update MEMORY.md with significant learnings
+- [ ] Flag any urgent items to Daniel via Telegram
+```
+
+### Goal format best practices
+
+- **Be specific.** "Publish 3 posts" is better than "create content."
+- **Include success criteria.** How does the agent know it is done?
+- **Set priorities.** Which goals matter most if time or tokens are limited?
+- **Include boundaries.** What should the agent NOT do?
+
+---
+
+## Configuring the Schedule
+
+Autopilot runs on cron schedules. Create recurring jobs that trigger agent sessions:
+
+<Steps>
+
+1. **Create the autopilot cron job**
+
+   ```bash
+   openclaw cron add \
+     --name "frigg-autopilot" \
+     --agent frigg \
+     --cron "0 9,13,17 * * 1-5" \
+     --message "Read HEARTBEAT.md. Review your goals. Execute the highest-priority incomplete task. Update your progress." \
+     --session isolated \
+     --model sonnet \
+     --tz "America/Sao_Paulo"
+   ```
+
+   This runs Frigg three times per day (9 AM, 1 PM, 5 PM) on weekdays.
+
+2. **Configure active hours**
+
+   In `openclaw.json`, set when the agent is allowed to run:
+
+   ```json
+   {
+     "agents": {
+       "list": [
+         {
+           "id": "frigg",
+           "heartbeat": {
+             "every": "30m",
+             "activeHours": {
+               "start": "08:00",
+               "end": "22:00"
+             }
+           }
+         }
+       ]
+     }
+   }
+   ```
+
+3. **Set context limits**
+
+   Prevent runaway sessions by setting limits in `AGENTS.md`:
+
+   ```markdown
+   ## Context Limits
+   - Alert at 40% context usage
+   - Hard stop at 75%
+   - Max 3 retries on any failed task
+   - If a task fails 3 times, stop and report to Daniel
+   ```
+
+</Steps>
+
+---
+
+## Choosing the Autopilot Agent
+
+Not every agent should run on Autopilot. Choose based on the role:
+
+| Agent | Good for Autopilot? | Why |
+|-------|---------------------|-----|
+| **Frigg** (Coordinator) | Excellent | Orchestrates other agents, manages pipelines |
+| **Mimir** (Researcher) | Good | Can research autonomously, low risk |
+| **Loki** (Monitor) | Good | Analytics and monitoring are naturally autonomous |
+| **Bragi** (Writer) | With gates | Content creation needs approval before publishing |
+| **Odin** (Dev Chief) | Careful | Code changes need review |
+| **Claw** (Controller) | No | Platform controller, runs in main session |
+
+### Multi-agent Autopilot
+
+You can run multiple agents on Autopilot simultaneously. The coordination happens through:
+- Shared boards (tasks visible to all squad members)
+- `sessions_send` for inter-agent communication
+- Approval queue for human checkpoints
+
+```bash
+# Research agent -- runs every 4 hours
+openclaw cron add --name "mimir-autopilot" --agent mimir \
+  --cron "0 8,12,16,20 * * *" \
+  --message "Check RSS feeds and news sources. Summarize anything relevant. Save to workspace." \
+  --session isolated --model sonnet
+
+# Content agent -- runs twice daily
+openclaw cron add --name "bragi-autopilot" --agent bragi \
+  --cron "0 10,15 * * 1-5" \
+  --message "Check for approved topics from Mimir. Draft content if available. Submit for review." \
+  --session isolated --model sonnet
+
+# Analytics agent -- runs once daily
+openclaw cron add --name "loki-autopilot" --agent loki \
+  --cron "0 21 * * *" \
+  --message "Generate daily analytics report. Track post engagement. Flag anomalies." \
+  --session isolated --model haiku
+```
+
+---
+
+## Reviewing Run Results
+
+### Via Mission Control
+
+1. Navigate to **Dashboard** -- see recent agent activity
+2. Check **Tasks** -- view task status changes
+3. Review **Approvals** -- see pending items
+4. Read **Memory** -- daily session logs from each agent
+
+### Via CLI
+
+```bash
+# View cron run history
+openclaw cron runs --id <job-id>
+
+# View recent sessions
+openclaw sessions list
+
+# Read agent memory
+cat ~/.openclaw/workspace/squads/clop-cabinet/pa/memory/$(date +%Y-%m-%d).md
+```
+
+### Via API
+
+```bash
+# Recent activities
+curl http://localhost:3000/api/activities
+
+# Task changes
+curl http://localhost:3000/api/tasks
+
+# Pending approvals
+curl http://localhost:3000/api/approvals
+```
+
+---
+
+## The Feedback Loop
+
+Autopilot improves over time through a feedback loop:
+
+### 1. Review outputs
+
+After each Autopilot cycle, review what the agent produced:
+- Was the research relevant?
+- Was the content quality acceptable?
+- Were the right decisions made?
+
+### 2. Provide feedback
+
+Use the feedback system to teach the agent:
+
+```bash
+curl -X POST http://localhost:3000/api/feedback \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "bragi",
+    "taskId": "CLA-T-055",
+    "type": "correction",
+    "content": "LinkedIn posts should be shorter -- max 800 words. Use more bullet points.",
+    "context": "Post was 1500 words, too dense for LinkedIn"
+  }'
+```
+
+Feedback types:
+- **correction** -- Something was wrong, do it differently
+- **praise** -- This was great, do more of this
+- **pattern** -- A general pattern to follow
+- **rule** -- A hard rule to never break
+
+### 3. Update agent files
+
+Based on feedback patterns, update the agent's operating instructions:
+
+```markdown title="AGENTS.md (addition)"
+## Lessons Learned
+- LinkedIn posts: max 800 words, use bullet points
+- Technical topics: lead with the business impact, not the tech details
+- Best posting times: 9-10 AM BRT on weekdays
+```
+
+### 4. Adjust the schedule
+
+If agents are running too often (wasting tokens) or too rarely (missing opportunities), adjust the cron schedule:
+
+```bash
+openclaw cron edit <job-id> --cron "0 9,14 * * 1-5"
+```
+
+---
+
+## Best Practices
+
+1. **Start small.** Begin with one agent on a simple Autopilot task (e.g., daily RSS monitoring). Expand once you trust the outputs.
+
+2. **Keep HEARTBEAT.md short.** Long checklists burn tokens every heartbeat cycle. Focus on 3-5 actionable items.
+
+3. **Use the right model.** Autopilot tasks that are routine can use Haiku to save costs. Reserve Sonnet and Opus for tasks requiring judgment.
+
+4. **Set failure limits.** Always configure max retries to prevent infinite loops. Three attempts is usually sufficient.
+
+5. **Review regularly.** Even well-tuned Autopilot agents need periodic human review. Check outputs weekly and provide feedback.
+
+6. **Monitor costs.** Track token usage through the usage API:
+   ```bash
+   curl http://localhost:3000/api/usage
+   ```
+   Adjust cron frequency if costs are higher than expected.
+
+7. **Use gates for safety.** Never remove approval gates for actions that affect the outside world. Autopilot + ungated publishing is a recipe for problems.

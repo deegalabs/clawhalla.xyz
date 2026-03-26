@@ -1,0 +1,538 @@
+---
+title: "Architecture"
+description: "Deep dive into ClawHalla's system architecture: gateway, agents, data model, real-time pipeline, and smart contracts."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+ClawHalla is a multi-layered system that connects AI agents to messaging surfaces, management dashboards, and blockchain infrastructure. This document covers the full architecture.
+
+---
+
+## System Diagram
+
+```
+                    ┌──────────────────────────────────────────────┐
+                    │                  Channels                    │
+                    │  Telegram  │  Discord  │  Web Chat  │  API  │
+                    └──────────────────┬───────────────────────────┘
+                                       │
+                    ┌──────────────────▼───────────────────────────┐
+                    │           OpenClaw Gateway                   │
+                    │       ws://127.0.0.1:18789                   │
+                    │                                              │
+                    │  ┌─────────┐  ┌──────────┐  ┌───────────┐  │
+                    │  │  Auth   │  │  Router   │  │   Cron    │  │
+                    │  │ Profiles│  │ Bindings  │  │  Scheduler│  │
+                    │  └─────────┘  └──────────┘  └───────────┘  │
+                    └──────────────────┬───────────────────────────┘
+                                       │
+                    ┌──────────────────▼───────────────────────────┐
+                    │              Agent Layer                      │
+                    │                                              │
+                    │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
+                    │  │ Claw │ │ Odin │ │ Vidar│ │Frigg │ ...   │
+                    │  │ T0   │ │ T1   │ │ T1   │ │ T2   │       │
+                    │  └──┬───┘ └──┬───┘ └──┬───┘ └──┬───┘       │
+                    │     │        │        │        │             │
+                    │  ┌──▼────────▼────────▼────────▼──┐         │
+                    │  │    Workspace (Markdown Files)   │         │
+                    │  │  SOUL.md │ AGENTS.md │ memory/  │         │
+                    │  └────────────────────────────────┘         │
+                    └──────────────────┬───────────────────────────┘
+                                       │
+          ┌────────────────────────────┼────────────────────────────┐
+          │                            │                            │
+┌─────────▼──────────┐  ┌─────────────▼───────────┐  ┌────────────▼──────────┐
+│  Mission Control   │  │      File System         │  │   Smart Contracts     │
+│  (Next.js @ :3000) │  │   ~/.openclaw/           │  │   (Base L2)           │
+│                    │  │                           │  │                       │
+│  Dashboard         │  │  openclaw.json            │  │  AgentRegistry.sol    │
+│  Tasks / Sprints   │  │  agents/                  │  │  LicenseNFT.sol       │
+│  Approvals         │  │  workspace/               │  │  Marketplace.sol      │
+│  Agent Factory     │  │  cron/                    │  │                       │
+│  Vault             │  │  logs/                    │  │                       │
+│  Memory            │  │  skills/                  │  │                       │
+└────────────────────┘  └───────────────────────────┘  └───────────────────────┘
+         │
+┌────────▼───────────┐
+│    SQLite DB       │
+│  11 tables         │
+│  (Drizzle ORM)     │
+└────────────────────┘
+```
+
+---
+
+## Gateway
+
+The OpenClaw Gateway is a single long-lived WebSocket server that owns all messaging surfaces.
+
+### Wire protocol
+
+Communication uses a JSON-based request/response protocol over WebSocket:
+
+```
+Client → Gateway:   { type: "req", id, method, params }
+Gateway → Client:   { type: "res", id, ok, payload | error }
+Gateway → Client:   { type: "event", event, payload, seq?, stateVersion? }
+```
+
+The first frame from any client must be a `connect` request:
+
+```json
+{
+  "type": "req",
+  "id": "1",
+  "method": "connect",
+  "params": {
+    "auth": {
+      "token": "your-gateway-token"
+    }
+  }
+}
+```
+
+### Node roles
+
+Clients can declare `role: node` with capabilities and commands, enabling them to act as macOS, iOS, Android, or headless execution nodes.
+
+### Agent routing
+
+The gateway routes incoming messages to agents based on binding rules:
+
+1. Message arrives on a channel (Telegram, Discord, etc.)
+2. Router checks bindings: which agent handles this channel/chat?
+3. Agent session is created or resumed
+4. Bootstrap files are injected into the context
+5. Model call is made with full context
+6. Response flows back through the channel
+
+---
+
+## Agent Hierarchy
+
+ClawHalla organizes agents into four tiers:
+
+### Tier 0 -- Platform Controller
+
+| Agent | Role | Model |
+|-------|------|-------|
+| **Claw** | System Controller | Opus 4.6 |
+
+The platform controller manages runtime, configuration, and agent registration. It never executes project tasks directly -- it delegates to executives.
+
+### Tier 1 -- Executives
+
+| Agent | Role | Model | Manages |
+|-------|------|-------|---------|
+| **Odin** | CTO | Sonnet 4.6 | Thor, Frigg |
+| **Vidar** | Blockchain Architect | Sonnet 4.6 | Sindri, Skadi, Tyr |
+| **Saga** | Research Lead | Sonnet 4.6 | -- |
+
+Executives make architectural decisions, manage squads, and escalate to the CEO (Daniel) when needed.
+
+### Tier 2 -- Management
+
+| Agent | Role | Model | Manages |
+|-------|------|-------|---------|
+| **Thor** | Tech Lead | Sonnet 4.5 | Freya, Heimdall, Volund |
+| **Frigg** | Coordinator (PA) | Haiku 4.5 | Mimir, Bragi, Loki |
+| **Tyr** | Security Auditor | Opus 4.6 | -- |
+
+Managers route tasks, review work, and handle day-to-day operations.
+
+### Tier 3 -- Execution
+
+| Agent | Role | Model | Squad |
+|-------|------|-------|-------|
+| **Freya** | Senior Dev | Sonnet 4.5 | Dev |
+| **Heimdall** | QA Observer | Haiku 4.5 | Dev |
+| **Volund** | Dev/GitHub | Sonnet 4.5 | Dev |
+| **Sindri** | Solidity Dev | Sonnet 4.5 | Blockchain |
+| **Skadi** | Cairo Dev | Sonnet 4.5 | Blockchain |
+| **Mimir** | Knowledge Curator | Sonnet 4.5 | Clop Cabinet |
+| **Bragi** | Content Creator | Sonnet 4.5 | Clop Cabinet |
+| **Loki** | Monitor/Analyst | Sonnet 4.5 | Clop Cabinet |
+
+Execution agents do the actual work: writing code, creating content, researching, monitoring.
+
+### Squads
+
+Agents are grouped into squads with clear domains:
+
+| Squad | Chief | Domain |
+|-------|-------|--------|
+| **dev_squad** | Odin | Full-stack development |
+| **blockchain_squad** | Vidar | Smart contracts, security |
+| **clop_cabinet** | Frigg | Content, research, monitoring |
+| **product_squad** | Saga | Product research, strategy |
+
+### Escalation chain
+
+```
+Execution → Management:  blocker, conflict, unclear requirements
+Management → Executive:  architecture decision, resource conflict, deadline risk
+Executive → CEO:         budget, strategy, external communication, deploy approval
+```
+
+---
+
+## Data Model
+
+Mission Control uses **SQLite** with **Drizzle ORM**. The database contains 11 tables:
+
+### Core tables
+
+**agents** -- Registered agent metadata
+```sql
+CREATE TABLE agents (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  tier INTEGER NOT NULL,
+  squad TEXT,
+  model TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'idle',
+  emoji TEXT,
+  reports_to TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+```
+
+**tasks** -- Work items
+```sql
+CREATE TABLE tasks (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'backlog',    -- backlog, in_progress, review, done, blocked
+  priority TEXT NOT NULL DEFAULT 'medium',   -- low, medium, high, critical
+  assigned_to TEXT,
+  project_id TEXT,
+  story_id TEXT,
+  sprint_id TEXT,
+  estimated_hours INTEGER,
+  actual_hours INTEGER,
+  tags TEXT,
+  notes TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  completed_at INTEGER
+);
+```
+
+**epics** -- Large feature groupings
+```sql
+CREATE TABLE epics (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_by TEXT,
+  approved_by TEXT,
+  priority TEXT DEFAULT 'medium',
+  notes TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  completed_at INTEGER
+);
+```
+
+**stories** -- User stories linked to epics
+```sql
+CREATE TABLE stories (
+  id TEXT PRIMARY KEY,
+  epic_id TEXT,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'backlog',
+  points INTEGER,
+  assigned_to TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  completed_at INTEGER
+);
+```
+
+**sprints** -- Time-boxed work periods
+```sql
+CREATE TABLE sprints (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'planning',    -- planning, active, completed
+  start_date TEXT,
+  end_date TEXT,
+  story_ids TEXT,     -- JSON array of story IDs
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+```
+
+**projects** -- Top-level project containers
+```sql
+CREATE TABLE projects (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  squad TEXT,
+  start_date INTEGER,
+  end_date INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+```
+
+### Operational tables
+
+**activities** -- Agent action log
+```sql
+CREATE TABLE activities (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target TEXT,
+  details TEXT,
+  timestamp INTEGER NOT NULL
+);
+```
+
+**approvals** -- Human approval queue
+```sql
+CREATE TABLE approvals (
+  id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  requested_by TEXT NOT NULL,
+  approver TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',    -- pending, approved, rejected
+  command TEXT,
+  reason TEXT,
+  created_at INTEGER NOT NULL,
+  resolved_at INTEGER
+);
+```
+
+**cost_events** -- Token usage and cost tracking
+```sql
+CREATE TABLE cost_events (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  model TEXT NOT NULL,
+  action TEXT NOT NULL,         -- session, task, search, api_call
+  input_tokens INTEGER DEFAULT 0,
+  output_tokens INTEGER DEFAULT 0,
+  estimated_cost_cents INTEGER DEFAULT 0,
+  task_id TEXT,
+  timestamp INTEGER NOT NULL
+);
+```
+
+**secrets** -- Encrypted vault
+```sql
+CREATE TABLE secrets (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  encrypted_value TEXT NOT NULL,    -- AES-256-GCM encrypted
+  iv TEXT NOT NULL,                 -- Initialization vector
+  category TEXT NOT NULL DEFAULT 'api_key',
+  created_by TEXT NOT NULL DEFAULT 'daniel',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  last_accessed_at INTEGER
+);
+```
+
+**workspace_files** -- File metadata index
+```sql
+CREATE TABLE workspace_files (
+  id TEXT PRIMARY KEY,
+  path TEXT NOT NULL,
+  type TEXT NOT NULL,
+  size INTEGER,
+  last_modified INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+```
+
+---
+
+## Real-Time Pipeline
+
+Mission Control uses a file-watching pipeline to react to workspace changes in real time.
+
+### How it works
+
+```
+Workspace files change
+        │
+        ▼
+  Chokidar watcher
+  (watches board/, memory/, org_structure.yaml, knowledge_base/)
+        │
+        ├──▶ Log activity to DB (activities table)
+        ├──▶ Reindex searchable files (search index)
+        └──▶ Emit SSE event to connected clients
+                │
+                ▼
+        Browser dashboard updates in real time
+```
+
+### Watched paths
+
+The watcher monitors these paths for changes:
+
+- `workspace/company/org_structure.yaml` -- Org changes
+- `workspace/projects/clawhalla/board/` -- Task board updates
+- `workspace/memory/` -- Daily memory logs
+- `workspace/company/knowledge_base/` -- Knowledge articles
+
+### Indexable file types
+
+Only `.md`, `.yaml`, and `.yml` files are indexed for full-text search.
+
+### SSE connection
+
+Clients connect to `GET /api/sse` for real-time updates. The connection sends:
+- **connected** event on first connection
+- **file_change** events when watched files change
+- **ping** events every 30 seconds as keepalive
+
+---
+
+## Security Model
+
+### Vault
+
+Secrets are stored encrypted in SQLite using AES-256-GCM:
+
+1. A passphrase (`VAULT_KEY` or `GATEWAY_TOKEN`) is derived into a 256-bit key using `scrypt`
+2. Each secret gets a random 128-bit IV
+3. Encryption produces ciphertext + 128-bit authentication tag
+4. The `GET /api/vault` endpoint never returns decrypted values
+5. Only `POST /api/vault/reveal` returns the plaintext (use sparingly)
+
+### Gateway authentication
+
+The gateway uses a shared token for all connections. Clients must include the token in their `connect` frame. Without a valid token, the connection is rejected.
+
+### Agent sandboxing
+
+Agents can be sandboxed with restricted tool access:
+
+```json
+{
+  "tools": {
+    "allow": ["exec", "read", "sessions_list"],
+    "deny": ["write", "edit", "browser", "cron"]
+  }
+}
+```
+
+Full Docker sandboxing is also available per agent:
+
+```json
+{
+  "sandbox": {
+    "mode": "all",
+    "scope": "agent",
+    "docker": {
+      "setupCommand": "apt-get update && apt-get install -y git"
+    }
+  }
+}
+```
+
+### Approval gates
+
+All external actions require human approval:
+1. Agent completes work
+2. Task moves to **Review**
+3. Approval request is created
+4. Human reviews and responds (approve/reject)
+5. Only on explicit approval does execution proceed
+
+Implicit approval does not exist. Silence is not approval.
+
+---
+
+## Smart Contracts
+
+ClawHalla includes three Solidity contracts deployed on **Base L2** for the agent marketplace:
+
+### AgentRegistry.sol
+
+On-chain registry of agent templates with creator attribution.
+
+**Key functions:**
+- `registerTemplate(metadataURI, price, royaltyBps)` -- Register a new agent template
+- `updateTemplate(id, metadataURI, price)` -- Update metadata and price
+- `deactivateTemplate(id)` -- Remove from marketplace
+- `recordInstall(id, buyer)` -- Track installations (marketplace only)
+- `getTemplate(id)` -- Read template details
+- `getTemplatesByCreator(address)` -- List creator's templates
+
+**Template data:**
+```solidity
+struct AgentTemplate {
+    uint256 id;
+    address creator;
+    string metadataURI;     // IPFS or URL to template files
+    uint256 price;          // in wei
+    uint16 royaltyBps;      // max 1000 (10%)
+    bool active;
+    uint256 installs;
+    uint256 createdAt;
+}
+```
+
+### LicenseNFT.sol
+
+ERC-721 compatible license tokens for agent template access.
+
+**Key functions:**
+- `mint(to, templateId)` -- Mint a license (marketplace only)
+- `holdsValidLicense(user, templateId)` -- Check if user is licensed
+- `licensesOf(user)` -- List user's valid licenses
+- `revokeLicense(tokenId)` -- Revoke access (owner only)
+- Standard ERC-721: `transferFrom`, `approve`, `balanceOf`, `ownerOf`
+
+**License data:**
+```solidity
+struct License {
+    uint256 templateId;
+    address originalBuyer;
+    uint256 purchasedAt;
+    bool revoked;
+}
+```
+
+### Marketplace.sol
+
+Handles purchases, royalty splits, and license minting.
+
+**Key functions:**
+- `purchase(templateId)` -- Buy a template (mints license NFT)
+- `hasLicense(user, templateId)` -- Quick license check
+- `setPlatformFee(feeBps)` -- Adjust platform fee (max 10%)
+- `withdrawFees()` -- Withdraw accumulated platform fees
+- `pause()` / `unpause()` -- Emergency circuit breaker
+
+**Purchase flow:**
+1. Buyer calls `purchase(templateId)` with ETH payment
+2. Marketplace verifies template is active and buyer is not already licensed
+3. Payment is split: creator gets `price - platformFee`, platform keeps fee
+4. License NFT is minted to the buyer
+5. Install count is incremented on the registry
+
+**Fee structure:**
+- Platform fee: 2.5% default (max 10%)
+- Creator royalty: set by creator at registration (max 10%)
+- Duplicate purchase prevention: `holdsValidLicense` check
+
+**Security features:**
+- Two-step ownership transfer (prevent accidental transfers)
+- Pause mechanism for emergencies
+- Checks-effects-interactions pattern for reentrancy protection
+- Payment based on `template.price`, not `msg.value` (prevents overpayment exploitation)
+- Excess ETH is refunded to buyer

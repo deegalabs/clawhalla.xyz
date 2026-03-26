@@ -1,21 +1,439 @@
 ---
-title: Customization
-description: Customize ClawHalla and OpenClaw behavior.
+title: "Customization"
+description: "Customize agent personas, squads, skills, boards, Mission Control, and automation in ClawHalla."
 ---
 
-## Customize scripts
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-Edit files in `scripts/` to adapt startup and reset flows.
+ClawHalla is designed to be deeply customizable. Everything from agent personalities to project methodologies is defined in editable files -- no code changes required for most customizations.
 
-## Customize Docker image
+---
 
-Tune `Dockerfile` and `docker-compose.yml` for your environment.
+## Customizing Agent Personas
 
-## Customize OpenClaw behavior
+Agent personas are defined by markdown files in their workspace directory. Edit these files to change how an agent thinks, communicates, and operates.
 
-Use:
+### SOUL.md -- Personality and values
+
+This is the agent's core identity. Changes here affect tone, decision-making, and communication style.
+
+```markdown title="SOUL.md"
+# SOUL.md
+
+## Core Truths
+- Ship fast, iterate faster. Perfect is the enemy of done.
+- Code reviews are conversations, not gatekeeping.
+- Every PR should make the codebase better than it was.
+
+## Communication Style
+- Direct and concise. No filler.
+- Use code examples over lengthy explanations.
+- Disagree constructively -- explain why, not just what.
+
+## Boundaries
+- Never push to main without CI passing
+- Ask before refactoring code you did not write
+- Private conversations stay private
+```
+
+### AGENTS.md -- Operating instructions
+
+This controls what the agent does and how it handles different situations:
+
+```markdown title="AGENTS.md"
+## Squad Delegation
+| Domain | Action |
+|--------|--------|
+| Bug reports | Investigate, fix, write tests |
+| Feature requests | Create epic, break into stories |
+| Code reviews | Review for correctness, style, security |
+| Deployments | Prepare, test, wait for approval |
+
+## Context Limits
+- Alert at 40% context usage
+- Hard stop at 75%
+- Max 3 retries on any failed task
+```
+
+### IDENTITY.md -- Name and metadata
+
+Change the agent's name, emoji, and model assignment:
+
+```markdown title="IDENTITY.md"
+- **Name:** Valkyrie
+- **Role:** Senior Backend Developer
+- **Emoji:** ⚔️
+- **Model:** `anthropic/claude-sonnet-4-6`
+```
+
+<Aside type="tip">
+  Changes to persona files take effect on the next session. No restart needed -- the agent reads these files fresh each time it wakes up.
+</Aside>
+
+---
+
+## Creating Squad Packs
+
+A squad pack is a pre-configured set of agents that work together on a domain. Packs are stored as YAML files in `~/.openclaw/workspace/packs/`.
+
+### Pack structure
+
+```yaml title="packs/marketing-squad.yaml"
+name: Marketing Squad
+version: "1.0.0"
+description: Content marketing team with SEO, social media, and analytics
+author: your-name
+
+squad:
+  id: marketing_squad
+  name: Marketing Squad
+  domain: Content marketing, SEO, social media
+  chief: content-chief
+
+agents:
+  - id: content-chief
+    name: "Content Chief"
+    emoji: "📝"
+    role: content_director
+    model: claude-sonnet-4-6
+    tier: 2
+    reportsTo: claw
+    skills:
+      - content-strategy
+      - editorial-calendar
+    description: "Manages the content pipeline and editorial strategy"
+
+  - id: seo-writer
+    name: "SEO Writer"
+    emoji: "🔍"
+    role: seo_specialist
+    model: claude-sonnet-4-6
+    tier: 3
+    reportsTo: content-chief
+    skills:
+      - seo-optimization
+      - keyword-research
+    description: "Writes SEO-optimized content for blog and landing pages"
+
+  - id: social-manager
+    name: "Social Manager"
+    emoji: "📱"
+    role: social_media_manager
+    model: claude-haiku-4-5
+    tier: 3
+    reportsTo: content-chief
+    skills:
+      - social-scheduling
+      - engagement-tracking
+    description: "Manages social media posts and engagement"
+```
+
+### Installing a pack
+
+Via Mission Control:
+1. Go to **Marketplace** in the sidebar
+2. Browse or upload a pack
+3. Click **Install** -- agents are created automatically
+
+Via API:
+```bash
+curl -X POST http://localhost:3000/api/packs \
+  -H "Content-Type: application/json" \
+  -d @packs/marketing-squad.yaml
+```
+
+---
+
+## Adding Skills
+
+Skills are markdown files that provide domain-specific knowledge to agents. They live in the `skills/` directory, organized by category.
+
+### Workspace-level skills (shared)
+
+```
+~/.openclaw/workspace/skills/
+├── engineering/
+│   ├── SKILL.md
+│   ├── docker-best-practices.md
+│   └── ci-cd-patterns.md
+├── content/
+│   ├── SKILL.md
+│   └── seo-checklist.md
+└── research/
+    ├── SKILL.md
+    └── link-transcription.md
+```
+
+### Agent-level skills (specific)
+
+```
+~/.openclaw/workspace/squads/dev/backend/
+└── skills/
+    ├── postgres-optimization.md
+    └── api-design-patterns.md
+```
+
+Agent-level skills take precedence over workspace-level skills.
+
+### Writing a skill
+
+Each skill category should have a `SKILL.md` that describes when and how to use the skills:
+
+```markdown title="skills/engineering/SKILL.md"
+# Engineering Skills
+
+## When to use
+- Writing or reviewing code
+- Setting up infrastructure
+- Debugging production issues
+
+## Available knowledge
+- docker-best-practices.md -- Container patterns and anti-patterns
+- ci-cd-patterns.md -- Pipeline design for GitHub Actions
+```
+
+Individual skill files contain the actual knowledge:
+
+```markdown title="skills/engineering/docker-best-practices.md"
+# Docker Best Practices
+
+## Multi-stage builds
+Always use multi-stage builds to reduce image size:
+
+\`\`\`dockerfile
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+COPY . .
+RUN npm run build
+
+FROM node:24-alpine
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+CMD ["node", "dist/index.js"]
+\`\`\`
+
+## Health checks
+Always include a HEALTHCHECK instruction...
+```
+
+### Importing skills via API
 
 ```bash
-openclaw configure
-openclaw agents add <name>
+curl -X POST http://localhost:3000/api/skills/import \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "react-patterns",
+    "category": "engineering",
+    "content": "# React Patterns\n\n## Component design..."
+  }'
 ```
+
+---
+
+## Custom Boards and Methodology
+
+ClawHalla uses **AI-AGIL**, an agile methodology adapted for AI agent teams. Customize it by editing the files in `~/.openclaw/workspace/methodology/`.
+
+### Board structure
+
+Boards follow a kanban flow with YAML files:
+
+```
+boards/
+├── backlog/
+│   └── tasks.yaml
+├── doing/
+│   └── tasks.yaml
+├── review/
+│   └── tasks.yaml
+└── done/
+    └── tasks.yaml
+```
+
+### Custom task templates
+
+Edit `~/.openclaw/workspace/skills/ai-agil/templates/`:
+
+```markdown title="templates/task-template.md"
+# Task: {TASK_ID}
+
+## Description
+{description}
+
+## Acceptance Criteria
+- [ ] {criterion_1}
+- [ ] {criterion_2}
+
+## Assigned To
+{agent_id}
+
+## Priority
+{priority}
+
+## Definition of Done
+- [ ] Code written and tested
+- [ ] PR created and reviewed
+- [ ] Documentation updated
+- [ ] Approved by chief
+```
+
+### Sprint configuration
+
+```markdown title="templates/sprint-template.md"
+# Sprint: {SPRINT_NAME}
+
+## Duration
+{start_date} to {end_date}
+
+## Goals
+1. {goal_1}
+2. {goal_2}
+
+## Stories
+{story_list}
+
+## Capacity
+{agent_capacity_table}
+```
+
+---
+
+## Theming Mission Control
+
+Mission Control is built with Next.js and Tailwind CSS. Customize its appearance by modifying the source in `apps/mission-control/`.
+
+### Colors and styles
+
+Edit the global CSS:
+
+```css title="apps/mission-control/src/app/globals.css"
+:root {
+  --primary: #c9a959;      /* Gold accent */
+  --background: #0a0a0a;   /* Dark background */
+  --card: #1a1a1a;          /* Card background */
+  --text: #e5e5e5;          /* Primary text */
+  --muted: #888888;         /* Muted text */
+}
+```
+
+### Dashboard layout
+
+Edit the dashboard page at `apps/mission-control/src/app/(dashboard)/dashboard/page.tsx` to add or remove widgets.
+
+### Rebuilding after changes
+
+```bash
+cd apps/mission-control
+pnpm build
+pnpm start
+```
+
+---
+
+## Adding API Endpoints
+
+Extend Mission Control with custom API routes. Create new files in `apps/mission-control/src/app/api/`:
+
+```typescript title="apps/mission-control/src/app/api/custom/route.ts"
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    message: 'Custom endpoint working',
+  });
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  // Your custom logic here
+  return NextResponse.json({ ok: true, data: body });
+}
+```
+
+Access it at `http://localhost:3000/api/custom`.
+
+---
+
+## Creating Cron Jobs and Heartbeats
+
+### Cron jobs
+
+Cron jobs run agent tasks on a schedule. Create them via CLI or API:
+
+```bash
+# Daily standup report at 9 AM
+openclaw cron add \
+  --name "daily-standup" \
+  --agent odin \
+  --cron "0 9 * * *" \
+  --message "Generate a standup report of all squad activity in the last 24h" \
+  --session isolated \
+  --model sonnet
+```
+
+Via Mission Control API:
+
+```bash
+curl -X POST http://localhost:3000/api/crons \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "daily-standup",
+    "agentId": "odin",
+    "cron": "0 9 * * *",
+    "message": "Generate standup report for dev squad",
+    "model": "sonnet",
+    "timezone": "America/Sao_Paulo"
+  }'
+```
+
+### Heartbeats
+
+Heartbeats are periodic check-ins where agents review `HEARTBEAT.md` and take action if needed.
+
+Configure per agent in `openclaw.json`:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "heartbeat": {
+        "every": "30m",
+        "target": "last",
+        "activeHours": { "start": "08:00", "end": "22:00" }
+      }
+    }
+  }
+}
+```
+
+Edit `HEARTBEAT.md` in the agent's workspace to define what it checks:
+
+```markdown title="HEARTBEAT.md"
+# Heartbeat Checklist
+
+- [ ] Check for new tasks assigned to me
+- [ ] Review any blocked tasks and report status
+- [ ] Update memory/ with significant findings
+- [ ] Check if any deployments are pending review
+```
+
+### When to use cron vs heartbeat
+
+| Use Case | Cron | Heartbeat |
+|----------|------|-----------|
+| Exact timing required | Yes | No |
+| Batch multiple checks | No | Yes |
+| Needs session context | No | Yes |
+| Different model per task | Yes | No |
+| One-shot reminders | Yes | No |
+
+---
+
+## Next Steps
+
+- [Content Pipeline](/guides/content-pipeline/) -- Set up automated content creation
+- [Autopilot](/guides/autopilot/) -- Configure autonomous goal-driven execution
+- [API Reference](/reference/api/) -- Full list of Mission Control endpoints

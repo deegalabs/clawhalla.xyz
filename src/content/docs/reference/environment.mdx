@@ -1,13 +1,291 @@
 ---
-title: Environment Variables
-description: Variables available in `.env`.
+title: "Environment Variables"
+description: "Complete reference for all environment variables used by ClawHalla."
 ---
 
-Common variables:
+import { Aside } from '@astrojs/starlight/components';
 
-- `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`
-- `OPENCLAW_GATEWAY_TOKEN`
-- `CLAWDBOT_PASSWORD`
+Environment variables are set in the `.env` file at the root of the ClawHalla repository. Docker Compose injects these into the container at startup.
 
-Keep `.env` private and never commit secrets.
+```bash
+cp .env.example .env
+```
+
+<Aside type="caution">
+  Never commit `.env` to version control. It is listed in `.gitignore` by default.
+</Aside>
+
+---
+
+## Authentication
+
+### ANTHROPIC_API_KEY
+
+Your Anthropic API key for accessing Claude models.
+
+| | |
+|---|---|
+| **Required** | Yes (unless using Claude Max OAuth) |
+| **Format** | `sk-ant-api03-...` |
+| **Used by** | OpenClaw Gateway |
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+```
+
+If using Claude Max OAuth authentication, this variable should be removed or commented out. See the [Claude Max setup guide](/getting-started/claude-max/).
+
+---
+
+### OPENAI_API_KEY
+
+Optional API key for OpenAI models (GPT-4, etc.).
+
+| | |
+|---|---|
+| **Required** | No |
+| **Format** | `sk-...` |
+| **Used by** | OpenClaw Gateway (if OpenAI models are configured) |
+
+```bash
+OPENAI_API_KEY=sk-your-openai-key
+```
+
+---
+
+## Gateway
+
+### OPENCLAW_GATEWAY_PORT
+
+The port the OpenClaw gateway listens on.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | `18789` |
+| **Used by** | OpenClaw Gateway, Mission Control |
+
+```bash
+OPENCLAW_GATEWAY_PORT=18789
+```
+
+This port must also be exposed in `docker-compose.yml`.
+
+---
+
+### OPENCLAW_GATEWAY_TOKEN
+
+Authentication token for gateway connections. Agents and Mission Control must include this token when connecting.
+
+| | |
+|---|---|
+| **Required** | Recommended |
+| **Default** | None (no auth) |
+| **Used by** | OpenClaw Gateway, Mission Control, all API clients |
+
+```bash
+OPENCLAW_GATEWAY_TOKEN=your-secure-random-token
+```
+
+Generate a secure token:
+
+```bash
+openssl rand -hex 32
+```
+
+<Aside type="caution">
+  Without a gateway token, anyone with network access to port 18789 can control your agents. Always set this in production.
+</Aside>
+
+---
+
+## Container
+
+### CLAWDBOT_PASSWORD
+
+Password for the `clawdbot` user inside the Docker container.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | `clawdbot` |
+| **Used by** | Dockerfile (build arg) |
+
+```bash
+CLAWDBOT_PASSWORD=your-password
+```
+
+Used when you need `sudo` inside the container or SSH access.
+
+---
+
+## Security
+
+### VAULT_KEY
+
+Encryption key for the Mission Control secrets vault. Secrets are encrypted with AES-256-GCM using a key derived from this passphrase.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | Falls back to `GATEWAY_TOKEN`, then a built-in default |
+| **Used by** | Mission Control vault |
+
+```bash
+VAULT_KEY=your-vault-encryption-key
+```
+
+<Aside type="danger">
+  If you change `VAULT_KEY` after storing secrets, all existing secrets become unreadable. Back up your vault before changing this value.
+</Aside>
+
+---
+
+### DB_PATH
+
+Path to the SQLite database used by Mission Control.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | Internal path within the container |
+| **Used by** | Mission Control |
+
+```bash
+DB_PATH=/home/clawdbot/.openclaw/mission-control.db
+```
+
+The database stores tasks, epics, sprints, projects, activities, approvals, cost events, and workspace file metadata.
+
+---
+
+## Channels
+
+### TELEGRAM_BOT_TOKEN
+
+Token for your Telegram bot, obtained from [@BotFather](https://t.me/BotFather).
+
+| | |
+|---|---|
+| **Required** | No (only for Telegram integration) |
+| **Format** | `123456789:ABCdefGhIjKlMnOpQrStUvWxYz` |
+| **Used by** | OpenClaw Gateway (Telegram channel) |
+
+```bash
+TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIjKlMnOpQrStUvWxYz
+```
+
+---
+
+### DISCORD_BOT_TOKEN
+
+Token for your Discord bot, from the [Discord Developer Portal](https://discord.com/developers/applications).
+
+| | |
+|---|---|
+| **Required** | No (only for Discord integration) |
+| **Format** | `MTIz...` |
+| **Used by** | OpenClaw Gateway (Discord channel) |
+
+```bash
+DISCORD_BOT_TOKEN=MTIzNDU2Nzg5...
+```
+
+---
+
+## Runtime
+
+### NODE_ENV
+
+Node.js environment mode.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | `development` |
+| **Values** | `development`, `production`, `test` |
+| **Used by** | Mission Control, Node.js runtime |
+
+```bash
+NODE_ENV=production
+```
+
+In `production` mode, Mission Control enables optimizations and disables development tools.
+
+---
+
+## Mission Control
+
+### GATEWAY_URL
+
+URL for the OpenClaw gateway, used by Mission Control to communicate with agents.
+
+| | |
+|---|---|
+| **Required** | Yes (for MC container) |
+| **Default** | `http://127.0.0.1:18789` |
+| **Used by** | Mission Control |
+
+```bash
+GATEWAY_URL=http://clawhalla:18789
+```
+
+When running MC as a separate container, use the Docker service name (`clawhalla`) instead of `localhost`.
+
+---
+
+### GATEWAY_TOKEN
+
+Same as `OPENCLAW_GATEWAY_TOKEN`, used by Mission Control to authenticate with the gateway.
+
+| | |
+|---|---|
+| **Required** | Yes (if gateway token is set) |
+| **Used by** | Mission Control |
+
+```bash
+GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+```
+
+---
+
+### WORKSPACE_PATH
+
+Override the default workspace path used by Mission Control for reading files.
+
+| | |
+|---|---|
+| **Required** | No |
+| **Default** | `~/.openclaw/workspace` |
+| **Used by** | Mission Control (watcher, search, docs, memory) |
+
+```bash
+WORKSPACE_PATH=/home/clawdbot/.openclaw/workspace
+```
+
+---
+
+## Example .env File
+
+```bash title=".env"
+# === Authentication ===
+ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+# OPENAI_API_KEY=sk-...
+
+# === Gateway ===
+OPENCLAW_GATEWAY_PORT=18789
+OPENCLAW_GATEWAY_TOKEN=your-secure-random-token
+
+# === Container ===
+CLAWDBOT_PASSWORD=your-password
+
+# === Security ===
+VAULT_KEY=your-vault-encryption-key
+
+# === Channels (optional) ===
+# TELEGRAM_BOT_TOKEN=123456789:ABC...
+# DISCORD_BOT_TOKEN=MTIz...
+
+# === Runtime ===
+NODE_ENV=production
+```

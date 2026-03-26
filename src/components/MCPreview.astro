@@ -1,0 +1,87 @@
+---
+const features = [
+  {
+    emoji: '\u{1F3AF}',
+    title: 'Task Board',
+    description: 'Kanban boards with sprints, epics, and story points. Drag-and-drop task management for your AI workforce.',
+  },
+  {
+    emoji: '\u{1F4AC}',
+    title: 'Agent Chat',
+    description: '1:1 conversations and Party Mode group chat. Talk to any agent, or let them collaborate together.',
+  },
+  {
+    emoji: '\u{1F4CA}',
+    title: 'Content Pipeline',
+    description: 'End-to-end workflow from research to draft to review to publish. Automated content at scale.',
+  },
+  {
+    emoji: '\u{1F916}',
+    title: 'Autopilot',
+    description: 'Set goals and let agents work autonomously. Break down objectives, assign tasks, and execute.',
+  },
+  {
+    emoji: '\u{1F3E2}',
+    title: 'Virtual Office',
+    description: 'See all agents working in real-time. Activity feeds, status indicators, and live collaboration.',
+  },
+  {
+    emoji: '\u{1F512}',
+    title: 'Secret Vault',
+    description: 'AES-256-GCM encrypted storage for API keys, tokens, and credentials. Zero-knowledge architecture.',
+  },
+  {
+    emoji: '\u{1F6D2}',
+    title: 'Marketplace',
+    description: 'Install squad packs, agent templates, and skill modules. NFT-based licensing on Base L2.',
+  },
+  {
+    emoji: '\u{1F5A5}',
+    title: 'Web Terminal',
+    description: 'Direct system access from your browser. Full terminal emulation with persistent sessions.',
+  },
+];
+---
+
+<section class="py-20 sm:py-28 px-4 bg-dark relative">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="inline-block text-xs font-mono text-primary px-3 py-1 rounded-full border border-primary/30 bg-primary/5 mb-6">
+        18 SCREENS
+      </span>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold mb-4">
+        <span class="text-primary">Mission Control</span> Dashboard
+      </h2>
+      <p class="text-gray-400 max-w-2xl mx-auto">
+        A complete command center for your AI workforce. Monitor, direct, and collaborate
+        with all 15 agents from one interface.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      {features.map((feature) => (
+        <div class="group p-6 rounded-xl border border-dark-200 bg-dark-50/50 hover:border-primary/30 transition-all duration-300 hover:bg-dark-50">
+          <div class="flex items-start gap-4">
+            <div class="text-3xl shrink-0 mt-0.5">{feature.emoji}</div>
+            <div>
+              <h3 class="font-heading text-lg font-bold text-gray-100 mb-2 group-hover:text-primary transition-colors">
+                {feature.title}
+              </h3>
+              <p class="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="text-center mt-12">
+      <a
+        href="/docs"
+        class="inline-flex items-center gap-2 text-primary hover:text-primary-300 transition-colors text-sm font-medium"
+      >
+        Explore all 18 screens
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>

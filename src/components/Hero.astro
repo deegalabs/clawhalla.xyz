@@ -1,75 +1,513 @@
 ---
-// Hero component with Viking theme
+// Hero component — redesigned with animated terminal + multi-agent squad tagline
+// Task: task_6whp7omn74c801 — dark/light mode, mobile responsive
 ---
 
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-  <div class="absolute inset-0 bg-dark">
-    <div class="stars"></div>
+<section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
+  <!-- Background -->
+  <div class="absolute inset-0 hero-bg">
+    <div class="stars-field"></div>
+    <div class="hero-grid-overlay"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--hero-bg-fade)]"></div>
   </div>
 
-  <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
-    <div class="mb-8">
-      <div class="inline-block p-4 rounded-full bg-dark-50 border border-primary/30">
-        <svg class="w-20 h-20 text-primary" viewBox="0 0 100 100" fill="currentColor">
-          <path d="M50 10 L20 40 L20 70 L35 85 L65 85 L80 70 L80 40 Z M30 45 L30 65 M70 45 L70 65 M40 30 L40 20 M60 30 L60 20"/>
-        </svg>
+  <div class="relative z-10 w-full px-4 pt-20 pb-16 max-w-6xl mx-auto">
+    <!-- Top badge -->
+    <div class="flex justify-center mb-8">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full hero-badge text-sm font-medium">
+        <span class="relative flex h-2 w-2 shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+        </span>
+        v1.0 — Mission Control is live
       </div>
     </div>
 
-    <h1 class="font-heading text-6xl md:text-8xl font-bold mb-4 rune-glow">
-      <span class="text-primary">Claw</span><span class="text-gray-100">Halla</span>
-    </h1>
+    <!-- Headline -->
+    <div class="text-center mb-4">
+      <h1 class="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold rune-glow leading-tight">
+        <span class="text-primary">Claw</span><span class="hero-title-main">Halla</span>
+      </h1>
+    </div>
 
-    <p class="text-xl md:text-2xl text-primary font-medium tracking-widest uppercase mb-6">
-      Your AI Agent's Hall of Glory
-    </p>
+    <!-- Tagline -->
+    <div class="text-center mb-4">
+      <p class="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide hero-tagline-primary uppercase">
+        Multi-Agent AI Squad System
+      </p>
+    </div>
 
-    <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-      Run OpenClaw in Docker with zero friction. One command to rule them all.
-      <br />
-      No Node.js setup. No dependency hell. Just your agent, ready to serve.
-    </p>
+    <!-- Sub-tagline -->
+    <div class="text-center mb-10">
+      <p class="text-base sm:text-lg md:text-xl hero-tagline-secondary max-w-2xl mx-auto">
+        15 specialized AI agents, 4 squads, one command to deploy.
+        <br class="hidden sm:block" />
+        Ship faster. Work smarter. Let your squad handle it.
+      </p>
+    </div>
 
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <!-- CTAs -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-14">
       <a
         href="#quick-start"
-        class="px-8 py-4 bg-primary text-dark font-semibold rounded-lg hover:bg-primary-300 transition-colors"
+        class="group cta-primary px-8 py-4 font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
       >
+        <svg class="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
         Get Started
+      </a>
+      <a
+        href="/docs"
+        class="cta-secondary px-8 py-4 font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        View Docs
       </a>
       <a
         href="https://github.com/deegalabs/clawhalla"
         target="_blank"
-        class="px-8 py-4 border border-primary/50 text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors"
+        rel="noopener"
+        class="cta-ghost px-8 py-4 font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
       >
-        View on GitHub
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
       </a>
+    </div>
+
+    <!-- Animated Terminal -->
+    <div class="max-w-3xl mx-auto mb-12">
+      <div class="terminal-window rounded-xl overflow-hidden shadow-2xl shadow-primary/10">
+        <!-- Terminal chrome -->
+        <div class="terminal-chrome flex items-center gap-2 px-4 py-3 border-b">
+          <div class="flex gap-1.5">
+            <span class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-default"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-default"></span>
+            <span class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-default"></span>
+          </div>
+          <div class="flex-1 flex justify-center">
+            <div class="terminal-title-pill px-3 py-0.5 rounded text-xs font-mono">
+              clawhalla — terminal
+            </div>
+          </div>
+          <div class="w-16"></div><!-- spacer -->
+        </div>
+
+        <!-- Terminal body -->
+        <div class="terminal-body p-5 font-mono text-sm leading-relaxed overflow-hidden" id="hero-terminal">
+          <!-- Install command with typing animation -->
+          <div class="terminal-line flex gap-2" data-delay="0">
+            <span class="terminal-prompt shrink-0">$</span>
+            <span class="typed-text text-gray-300" data-text="curl -fsSL https://clawhalla.xyz/install.sh | bash"></span>
+          </div>
+
+          <!-- Output lines -->
+          <div class="terminal-line opacity-0 flex gap-2 mt-1" data-delay="2200">
+            <span class="text-primary shrink-0">›</span>
+            <span class="terminal-output">Detecting system... <span class="text-gray-400">Linux x86_64</span></span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="2700">
+            <span class="text-primary shrink-0">›</span>
+            <span class="terminal-output">Docker found: <span class="text-green-400">v27.1.2</span></span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="3200">
+            <span class="text-primary shrink-0">›</span>
+            <span class="terminal-output">Pulling <span class="text-primary">clawhalla:latest</span>...</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="4000">
+            <span class="text-green-400 shrink-0">✓</span>
+            <span class="terminal-output">Container started</span>
+          </div>
+
+          <!-- Separator -->
+          <div class="terminal-line opacity-0 mt-2 mb-1" data-delay="4400">
+            <span class="text-gray-600 font-mono text-xs">──── Initializing squad system ────────────────────</span>
+          </div>
+
+          <!-- Agent roster -->
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="4800">
+            <span class="text-gray-500 shrink-0 w-6">T0</span>
+            <span class="text-primary w-20 shrink-0">Claw</span>
+            <span class="text-gray-500 flex-1 text-xs">Platform Chief</span>
+            <span class="text-green-400 text-xs">● ready</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="5100">
+            <span class="text-gray-500 shrink-0 w-6">T1</span>
+            <span class="text-primary w-20 shrink-0">Odin</span>
+            <span class="text-gray-500 flex-1 text-xs">Dev Chief</span>
+            <span class="text-green-400 text-xs">● ready</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="5350">
+            <span class="text-gray-500 shrink-0 w-6">T1</span>
+            <span class="text-primary w-20 shrink-0">Frigg</span>
+            <span class="text-gray-500 flex-1 text-xs">Personal Assistant</span>
+            <span class="text-green-400 text-xs">● ready</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="5600">
+            <span class="text-gray-500 shrink-0 w-6">T2</span>
+            <span class="text-primary w-20 shrink-0">Freya</span>
+            <span class="text-gray-500 flex-1 text-xs">Frontend Engineer</span>
+            <span class="text-green-400 text-xs">● ready</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="5850">
+            <span class="text-gray-500 shrink-0 w-6">T2</span>
+            <span class="text-gray-400 w-20 shrink-0 text-xs">+11 more</span>
+            <span class="text-gray-600 flex-1 text-xs">agents across 4 squads</span>
+            <span class="text-primary text-xs">all ready</span>
+          </div>
+
+          <!-- Mission Control -->
+          <div class="terminal-line opacity-0 mt-2" data-delay="6400">
+            <span class="text-gray-600 font-mono text-xs">──── Mission Control ───────────────────────────────</span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2" data-delay="6700">
+            <span class="text-green-400 shrink-0">✓</span>
+            <span class="terminal-output">Dashboard running at <a href="http://localhost:3000" class="text-primary underline decoration-primary/30">http://localhost:3000</a></span>
+          </div>
+          <div class="terminal-line opacity-0 flex gap-2 mt-1" data-delay="7300">
+            <span class="text-green-400 shrink-0">✓</span>
+            <span class="text-white font-semibold">Welcome to Valhalla. Your squad is ready.</span>
+          </div>
+
+          <!-- Blinking cursor after completion -->
+          <div class="terminal-line opacity-0 flex gap-2 mt-1" data-delay="7800">
+            <span class="terminal-prompt">$</span>
+            <span class="cursor-blink text-gray-600"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex flex-wrap justify-center gap-6 sm:gap-10 text-sm">
+      <div class="stat-item flex items-center gap-2">
+        <span class="text-primary font-bold text-lg tabular-nums">15</span>
+        <span class="hero-stat-label">agents</span>
+      </div>
+      <div class="stat-divider w-px h-6 hidden sm:block"></div>
+      <div class="stat-item flex items-center gap-2">
+        <span class="text-primary font-bold text-lg tabular-nums">4</span>
+        <span class="hero-stat-label">squads</span>
+      </div>
+      <div class="stat-divider w-px h-6 hidden sm:block"></div>
+      <div class="stat-item flex items-center gap-2">
+        <span class="text-primary font-bold text-lg tabular-nums">37</span>
+        <span class="hero-stat-label">API endpoints</span>
+      </div>
+      <div class="stat-divider w-px h-6 hidden sm:block"></div>
+      <div class="stat-item flex items-center gap-2">
+        <span class="text-primary font-bold text-lg">Base L2</span>
+        <span class="hero-stat-label">contracts</span>
+      </div>
+      <div class="stat-divider w-px h-6 hidden sm:block"></div>
+      <div class="stat-item flex items-center gap-2">
+        <span class="text-primary font-bold text-lg tabular-nums">1</span>
+        <span class="hero-stat-label">command to deploy</span>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
-  .stars {
-    background-image:
-      radial-gradient(2px 2px at 20px 30px, #eee, transparent),
-      radial-gradient(2px 2px at 40px 70px, #fff, transparent),
-      radial-gradient(1px 1px at 90px 40px, #ddd, transparent),
-      radial-gradient(2px 2px at 160px 120px, #fff, transparent),
-      radial-gradient(1px 1px at 230px 80px, #eee, transparent),
-      radial-gradient(2px 2px at 300px 150px, #fff, transparent),
-      radial-gradient(1px 1px at 370px 50px, #ddd, transparent),
-      radial-gradient(2px 2px at 450px 180px, #fff, transparent);
-    background-size: 500px 200px;
-    animation: twinkle 5s ease-in-out infinite;
-    opacity: 0.3;
+  /* ── CSS Custom Properties — Dark mode (default) ─────────────────────── */
+  :root {
+    --hero-bg: #0D0D0D;
+    --hero-bg-fade: #0D0D0D;
+    --hero-title-color: #e5e5e5;
+    --hero-tagline-primary: #C8933A;
+    --hero-tagline-secondary: #888;
+    --hero-badge-bg: rgba(200, 147, 58, 0.08);
+    --hero-badge-border: rgba(200, 147, 58, 0.3);
+    --hero-badge-color: #C8933A;
+    --terminal-bg: #141414;
+    --terminal-chrome-bg: #1c1c1c;
+    --terminal-border: #2a2a2a;
+    --terminal-title-bg: #0D0D0D;
+    --terminal-title-color: #555;
+    --terminal-prompt: #C8933A;
+    --terminal-output: #ccc;
+    --stat-label: #666;
+    --stat-divider: #2a2a2a;
+    --cta-primary-bg: #C8933A;
+    --cta-primary-text: #0D0D0D;
+    --cta-primary-hover: #CFA557;
+    --cta-secondary-border: rgba(200, 147, 58, 0.4);
+    --cta-secondary-text: #C8933A;
+    --cta-secondary-hover-bg: rgba(200, 147, 58, 0.08);
+    --cta-ghost-text: #666;
+    --cta-ghost-hover: #C8933A;
   }
 
-  @keyframes twinkle {
-    0%, 100% {
-      opacity: 0.3;
+  /* ── Light mode ──────────────────────────────────────────────────────── */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --hero-bg: #fafaf9;
+      --hero-bg-fade: #fafaf9;
+      --hero-title-color: #1a1a1a;
+      --hero-tagline-primary: #a0712a;
+      --hero-tagline-secondary: #6b6b6b;
+      --hero-badge-bg: rgba(160, 113, 42, 0.07);
+      --hero-badge-border: rgba(160, 113, 42, 0.25);
+      --hero-badge-color: #a0712a;
+      --terminal-bg: #1a1a1a;
+      --terminal-chrome-bg: #242424;
+      --terminal-border: #333;
+      --terminal-title-bg: #111;
+      --terminal-title-color: #555;
+      --terminal-prompt: #C8933A;
+      --terminal-output: #d0d0d0;
+      --stat-label: #888;
+      --stat-divider: #ddd;
+      --cta-primary-bg: #a0712a;
+      --cta-primary-text: #fff;
+      --cta-primary-hover: #C8933A;
+      --cta-secondary-border: rgba(160, 113, 42, 0.35);
+      --cta-secondary-text: #a0712a;
+      --cta-secondary-hover-bg: rgba(160, 113, 42, 0.07);
+      --cta-ghost-text: #999;
+      --cta-ghost-hover: #a0712a;
     }
-    50% {
-      opacity: 0.5;
+
+    .hero-section {
+      background-color: #fafaf9;
+    }
+
+    .stars-field {
+      opacity: 0 !important;
+    }
+
+    .hero-grid-overlay {
+      opacity: 0.03 !important;
     }
   }
+
+  /* ── Section & background ────────────────────────────────────────────── */
+  .hero-section {
+    background-color: var(--hero-bg);
+  }
+
+  .hero-bg {
+    background-color: var(--hero-bg);
+  }
+
+  .stars-field {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 20px 30px, #eee, transparent),
+      radial-gradient(1.5px 1.5px at 40px 70px, #fff, transparent),
+      radial-gradient(1px 1px at 90px 40px, #ddd, transparent),
+      radial-gradient(1.5px 1.5px at 160px 120px, #fff, transparent),
+      radial-gradient(1px 1px at 230px 80px, #eee, transparent),
+      radial-gradient(1.5px 1.5px at 300px 150px, #fff, transparent),
+      radial-gradient(1px 1px at 370px 50px, #ddd, transparent),
+      radial-gradient(1.5px 1.5px at 450px 180px, #fff, transparent),
+      radial-gradient(1px 1px at 120px 160px, #eee, transparent),
+      radial-gradient(1.5px 1.5px at 280px 40px, #fff, transparent),
+      radial-gradient(1px 1px at 420px 100px, #ddd, transparent),
+      radial-gradient(1.5px 1.5px at 500px 60px, #fff, transparent),
+      radial-gradient(1px 1px at 60px 130px, #eee, transparent),
+      radial-gradient(1.5px 1.5px at 340px 200px, #fff, transparent),
+      radial-gradient(1px 1px at 480px 140px, #ddd, transparent);
+    background-size: 550px 220px;
+    animation: twinkle 8s ease-in-out infinite;
+    opacity: 0.2;
+  }
+
+  .hero-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200, 147, 58, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200, 147, 58, 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.6;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  .hero-title-main {
+    color: var(--hero-title-color);
+  }
+
+  .hero-tagline-primary {
+    color: var(--hero-tagline-primary);
+  }
+
+  .hero-tagline-secondary {
+    color: var(--hero-tagline-secondary);
+  }
+
+  /* ── Badge ───────────────────────────────────────────────────────────── */
+  .hero-badge {
+    background: var(--hero-badge-bg);
+    border: 1px solid var(--hero-badge-border);
+    color: var(--hero-badge-color);
+  }
+
+  /* ── CTAs ────────────────────────────────────────────────────────────── */
+  .cta-primary {
+    background-color: var(--cta-primary-bg);
+    color: var(--cta-primary-text);
+  }
+  .cta-primary:hover {
+    background-color: var(--cta-primary-hover);
+    box-shadow: 0 8px 24px rgba(200, 147, 58, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .cta-secondary {
+    border: 1.5px solid var(--cta-secondary-border);
+    color: var(--cta-secondary-text);
+  }
+  .cta-secondary:hover {
+    background-color: var(--cta-secondary-hover-bg);
+    border-color: var(--cta-primary-bg);
+    transform: translateY(-1px);
+  }
+
+  .cta-ghost {
+    color: var(--cta-ghost-text);
+  }
+  .cta-ghost:hover {
+    color: var(--cta-ghost-hover);
+  }
+
+  /* ── Terminal ────────────────────────────────────────────────────────── */
+  .terminal-window {
+    background-color: var(--terminal-bg);
+    border: 1px solid var(--terminal-border);
+  }
+
+  .terminal-chrome {
+    background-color: var(--terminal-chrome-bg);
+    border-color: var(--terminal-border);
+  }
+
+  .terminal-title-pill {
+    background-color: var(--terminal-title-bg);
+    color: var(--terminal-title-color);
+  }
+
+  .terminal-body {
+    background-color: var(--terminal-bg);
+  }
+
+  .terminal-prompt {
+    color: var(--terminal-prompt);
+    font-weight: 600;
+  }
+
+  .terminal-output {
+    color: var(--terminal-output);
+  }
+
+  .typed-text {
+    border-right: 2px solid #C8933A;
+    animation: typeCursor 0.75s step-end infinite;
+  }
+
+  /* ── Stats ───────────────────────────────────────────────────────────── */
+  .hero-stat-label {
+    color: var(--stat-label);
+  }
+
+  .stat-divider {
+    background-color: var(--stat-divider);
+  }
+
+  /* ── Animations ──────────────────────────────────────────────────────── */
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.3; }
+  }
+
+  @keyframes fadeSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes typeCursor {
+    0%, 100% { border-color: #C8933A; }
+    50% { border-color: transparent; }
+  }
+
+  .terminal-line.show {
+    animation: fadeSlideIn 0.25s ease-out forwards;
+  }
 </style>
+
+<script>
+  function initHeroTerminal() {
+    const terminal = document.getElementById('hero-terminal');
+    if (!terminal) return;
+
+    // Clear any prior state (page transitions)
+    const allLines = terminal.querySelectorAll<HTMLElement>('.terminal-line');
+    allLines.forEach((line) => {
+      const delay = parseInt(line.getAttribute('data-delay') || '0');
+      if (delay > 0) {
+        line.classList.add('opacity-0');
+        line.classList.remove('show');
+      }
+    });
+
+    // Typing animation for the install command
+    const typedEl = terminal.querySelector<HTMLElement>('.typed-text');
+    if (typedEl) {
+      const text = typedEl.getAttribute('data-text') || '';
+      typedEl.textContent = '';
+      typedEl.style.borderRight = '';
+      let i = 0;
+
+      const typeInterval = setInterval(() => {
+        if (i < text.length) {
+          typedEl.textContent = text.substring(0, i + 1);
+          i++;
+        } else {
+          clearInterval(typeInterval);
+          // Remove cursor from typed text once done, output lines handle their own
+          setTimeout(() => {
+            typedEl.style.animation = 'none';
+            typedEl.style.borderRight = 'none';
+          }, 300);
+        }
+      }, 32);
+    }
+
+    // Reveal output lines with delays
+    const outputLines = terminal.querySelectorAll<HTMLElement>('.terminal-line[data-delay]');
+    const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+
+    outputLines.forEach((line) => {
+      const delay = parseInt(line.getAttribute('data-delay') || '0');
+      if (delay === 0) return;
+
+      const id = setTimeout(() => {
+        line.classList.remove('opacity-0');
+        line.classList.add('show');
+      }, delay);
+      timeoutIds.push(id);
+    });
+
+    // Replay button on click
+    terminal.addEventListener('click', () => {
+      timeoutIds.forEach(clearTimeout);
+      initHeroTerminal();
+    }, { once: true });
+  }
+
+  // Initial load
+  initHeroTerminal();
+
+  // Astro view transitions
+  document.addEventListener('astro:after-swap', initHeroTerminal);
+</script>

@@ -1,25 +1,107 @@
 ---
 const currentYear = new Date().getFullYear();
+
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Documentation', href: '/docs' },
+      { label: 'Changelog', href: '/changelog' },
+    ],
+  },
+  {
+    title: 'Community',
+    links: [
+      { label: 'Community', href: '/community' },
+      { label: 'GitHub', href: 'https://github.com/deegalabs/clawhalla' },
+      { label: 'Discord', href: '#' },
+      { label: 'Twitter', href: '#' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'Deega Labs', href: 'https://github.com/deegalabs' },
+      { label: 'Blog', href: '#' },
+      { label: 'Contact', href: 'mailto:contact@deegalabs.com' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'MIT License', href: 'https://github.com/deegalabs/clawhalla/blob/main/LICENSE' },
+      { label: 'Privacy Policy', href: '#' },
+    ],
+  },
+];
 ---
 
-<footer class="py-12 px-4 border-t border-dark-200">
-  <div class="max-w-4xl mx-auto text-center">
-    <div class="flex justify-center gap-6 mb-6">
-      <a href="https://github.com/deegalabs/clawhalla" class="text-gray-400 hover:text-primary transition-colors">
-        GitHub
-      </a>
-      <a href="/docs" class="text-gray-400 hover:text-primary transition-colors">
-        Documentation
-      </a>
-      <a href="https://openclaw.ai" class="text-gray-400 hover:text-primary transition-colors">
-        OpenClaw
-      </a>
+<footer class="pt-16 pb-8 px-4 border-t border-dark-200 bg-dark">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+      <!-- Brand column -->
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">{'\u{1F99E}'}</span>
+          <span class="font-heading text-xl font-bold">
+            <span class="text-primary">Claw</span><span class="text-gray-100">Halla</span>
+          </span>
+        </div>
+        <p class="text-gray-500 text-sm leading-relaxed mb-6">
+          Enterprise Autonomous AI Operating System. Open source, community-driven.
+        </p>
+
+        <!-- Newsletter -->
+        <div>
+          <p class="text-xs text-gray-400 mb-2 font-medium">Stay updated</p>
+          <form class="flex gap-2" onsubmit="event.preventDefault()">
+            <input
+              type="email"
+              placeholder="you@email.com"
+              class="flex-1 min-w-0 px-3 py-2 bg-dark-50 border border-dark-200 rounded-lg text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:border-primary/50 transition-colors"
+            />
+            <button
+              type="submit"
+              class="px-3 py-2 bg-primary text-dark text-sm font-semibold rounded-lg hover:bg-primary-300 transition-colors shrink-0"
+            >
+              Join
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Link columns -->
+      {columns.map((col) => (
+        <div>
+          <h4 class="text-sm font-semibold text-gray-200 mb-4">{col.title}</h4>
+          <ul class="space-y-2.5">
+            {col.links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-sm text-gray-500 hover:text-primary transition-colors"
+                  target={link.href.startsWith('http') ? '_blank' : undefined}
+                  rel={link.href.startsWith('http') ? 'noopener' : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
 
-    <p class="text-gray-500 text-sm mb-2">
-      Built for the OpenClaw community by <a href="https://github.com/deegalabs" class="text-primary hover:underline">DeegaLabs</a>
-    </p>
-
-    <p class="text-gray-600 text-xs">MIT License © {currentYear} ClawHalla Contributors</p>
+    <!-- Bottom bar -->
+    <div class="pt-6 border-t border-dark-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-gray-600 text-xs">
+        MIT License &copy; {currentYear} ClawHalla Contributors
+      </p>
+      <p class="text-gray-600 text-xs">
+        Built by <a href="https://github.com/deegalabs" class="text-primary hover:underline">Deega Labs</a> for the OpenClaw community
+      </p>
+    </div>
   </div>
 </footer>

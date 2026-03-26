@@ -1,0 +1,282 @@
+---
+title: "Content Pipeline"
+description: "Automate content creation from research to publishing with the ClawHalla content pipeline."
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+The Content Pipeline is a multi-agent workflow that automates the full lifecycle of content creation -- from research and topic selection through drafting, review, and publishing. It uses the **Clop Cabinet** squad to coordinate specialized agents through a gated approval process.
+
+---
+
+## Pipeline Overview
+
+The content pipeline follows eight stages, each handled by a specialized agent:
+
+```
+Research → Topic Selection → Draft → Media → Hashtags → Review → Publish → Report
+   │           │              │       │         │          │         │         │
+ Mimir      Frigg          Bragi   Bragi     Bragi     Daniel    Bragi     Loki
+```
+
+### Stages in detail
+
+| Stage | Agent | Description |
+|-------|-------|-------------|
+| **1. Research** | Mimir | Scans RSS feeds, news, trends, and bookmarks for relevant topics |
+| **2. Topic Selection** | Frigg | Reviews research, selects the best topic, defines angle and audience |
+| **3. Draft** | Bragi | Writes the content piece following platform-specific guidelines |
+| **4. Media** | Bragi | Generates or selects images, creates carousel slides if needed |
+| **5. Hashtags** | Bragi | Researches and adds platform-optimized hashtags and CTAs |
+| **6. Review** | Daniel (human) | Approval gate -- human reviews draft before publishing |
+| **7. Publish** | Bragi | Posts to the target platform via API |
+| **8. Report** | Loki | Monitors engagement metrics and generates a performance report |
+
+---
+
+## Agent Roles
+
+### Mimir -- Knowledge Curator
+
+Mimir is the research engine. It has access to:
+- RSS feed readers and blog watchers
+- Link transcription (YouTube, articles)
+- Bookmark management (Linkding)
+- Web search
+- PDF summarization
+
+Mimir outputs structured research briefs with sources, key insights, and suggested angles.
+
+### Bragi -- Content Creator
+
+Bragi handles all content creation. It knows:
+- Platform-specific formatting (LinkedIn, Twitter, Instagram, blog)
+- CTA templates and engagement patterns
+- Hashtag research and optimization
+- Image prompt generation
+- Post scheduling
+
+Bragi works from templates stored in its workspace:
+```
+squads/clop-cabinet/cma/
+├── CHECKLIST-POST-LINKEDIN.md
+├── CTA-TEMPLATES.md
+├── POST-TEMPLATE.md
+├── PLAYBOOK-LINKEDIN.md
+├── drafts/
+├── images/
+├── posts/
+└── scripts/
+```
+
+### Loki -- Analytics Monitor
+
+Loki tracks post-publication metrics:
+- Engagement rates (likes, comments, shares)
+- Impression counts
+- Follower growth
+- Content performance comparisons
+- Weekly and monthly trend reports
+
+### Frigg -- Coordinator
+
+Frigg orchestrates the entire pipeline:
+- Routes research requests to Mimir
+- Assigns drafting tasks to Bragi
+- Manages the approval queue
+- Sends drafts to Daniel for review
+- Triggers publishing on approval
+
+---
+
+## Starting a Pipeline
+
+### Via Mission Control
+
+1. Open Mission Control at `http://localhost:3000`
+2. Navigate to **Pipeline** in the sidebar
+3. Click **New Pipeline**
+4. Configure:
+   - **Platform:** LinkedIn, Twitter, Instagram, Blog, Newsletter
+   - **Topic:** (optional) Let Mimir research, or provide a topic
+   - **Tone:** Professional, casual, technical, storytelling
+   - **Target date:** When to publish
+5. Click **Start** -- the pipeline begins at the Research stage
+
+### Via agent message
+
+Send a message to Frigg (the coordinator):
+
+```bash
+openclaw agent --agent frigg -m "Start a content pipeline for LinkedIn. Topic: AI agents in software development. Target: tomorrow 10am."
+```
+
+### Via cron (automated)
+
+Set up a recurring content pipeline:
+
+```bash
+openclaw cron add \
+  --name "weekly-linkedin-post" \
+  --agent frigg \
+  --cron "0 8 * * 1" \
+  --message "Start a content pipeline for LinkedIn. Research trending AI/dev topics and draft a post for today." \
+  --session isolated \
+  --model sonnet
+```
+
+---
+
+## The Gate System
+
+Gates are human approval points that prevent automated publishing without review. This is a core safety feature of ClawHalla.
+
+### How gates work
+
+1. An agent completes its stage and moves the task to **Review**
+2. Frigg creates an **Approval Request** via the approvals API
+3. Daniel receives a notification (Telegram, Discord, or MC)
+4. Daniel reviews the draft and responds:
+   - **Approve:** "aprovado", "pode enviar", "go" -- pipeline continues
+   - **Adjust:** "change the title to..." -- Bragi revises and re-submits
+   - **Reject:** "rejeitar", "cancelar" -- pipeline stops
+
+### Gate configuration
+
+Gates are enforced by the approval system in `SOUL.md`:
+
+```markdown
+## Approval Law -- Inviolable
+
+Daniel approves everything. No exceptions.
+
+Before any external action:
+1. Complete the work
+2. Move to Review on the board
+3. Notify Daniel with the draft
+4. Wait for explicit approval
+5. Only then execute
+
+Implicit approval does not exist.
+Silence is not approval.
+```
+
+### Viewing pending approvals
+
+**Mission Control:** Navigate to **Approvals** in the sidebar.
+
+**API:**
+```bash
+curl http://localhost:3000/api/approvals
+```
+
+Response:
+```json
+{
+  "pending": [
+    {
+      "id": "apr_m1x2y3",
+      "taskId": "LinkedIn post: AI agents in dev",
+      "requestedBy": "bragi",
+      "approver": "daniel",
+      "status": "pending",
+      "command": "publish",
+      "reason": "Draft ready for review. 1200 words, 3 images.",
+      "createdAt": "2026-03-25T10:00:00Z"
+    }
+  ],
+  "history": []
+}
+```
+
+---
+
+## Platform Support
+
+### LinkedIn
+
+Full integration through the LinkedIn API:
+- Text posts with rich formatting
+- Image and carousel posts
+- Comment monitoring and engagement
+- Connection request management
+- Analytics tracking
+
+Configure LinkedIn in Mission Control **Settings** by adding your `LINKEDIN_ACCESS_TOKEN` to the vault.
+
+### Twitter/X
+
+Post creation, thread support, and engagement monitoring.
+
+### Instagram
+
+Image posts with captions and hashtags. Requires a connected business account.
+
+### Blog
+
+Generate markdown articles for your blog (Astro, Hugo, Next.js, etc.). Output is saved to a configured directory.
+
+### Newsletter
+
+Generate newsletter content compatible with email platforms (Mailchimp, ConvertKit, Resend).
+
+---
+
+## Scheduling and Automation
+
+### Manual scheduling
+
+Set a publish date when creating a pipeline:
+
+```bash
+openclaw agent --agent frigg -m "Draft a LinkedIn post about ClawHalla v1.0. Schedule for Thursday 10am BRT."
+```
+
+### Automated weekly pipeline
+
+Use cron to create a fully automated content cadence:
+
+```bash
+# Monday: Research trending topics
+openclaw cron add --name "monday-research" --agent mimir \
+  --cron "0 8 * * 1" --session isolated \
+  --message "Research trending AI and dev topics. Save findings to workspace."
+
+# Tuesday: Draft LinkedIn post
+openclaw cron add --name "tuesday-draft" --agent bragi \
+  --cron "0 9 * * 2" --session isolated \
+  --message "Read Mimir's latest research. Draft a LinkedIn post. Submit for review."
+
+# Wednesday: Check approval status
+openclaw cron add --name "wednesday-check" --agent frigg \
+  --cron "0 10 * * 3" --session isolated \
+  --message "Check if any content is approved and pending publication. Publish if approved."
+```
+
+### Monitoring pipeline status
+
+Check the current state of all pipelines:
+
+```bash
+curl http://localhost:3000/api/tasks?status=in_progress
+```
+
+Or check the board directly:
+
+```bash
+curl http://localhost:3000/api/board/sync?project=clawhalla | jq '.tasks[] | select(.tags | contains("content"))'
+```
+
+---
+
+## Best Practices
+
+1. **Always review before publishing.** The gate system exists for a reason. Automated content without human review can damage your brand.
+
+2. **Feed Mimir quality sources.** The research stage is only as good as its inputs. Configure RSS feeds, bookmarks, and topic lists relevant to your audience.
+
+3. **Iterate on templates.** Bragi's output quality improves dramatically when you provide good templates in `POST-TEMPLATE.md` and `CTA-TEMPLATES.md`.
+
+4. **Track what works.** Use Loki's analytics reports to understand which topics, formats, and posting times perform best. Feed this back into Mimir's research priorities.
+
+5. **Start with one platform.** Get the LinkedIn pipeline working well before expanding to other platforms. Each platform has different formatting rules and audience expectations.

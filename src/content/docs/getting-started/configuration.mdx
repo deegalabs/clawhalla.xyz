@@ -1,27 +1,321 @@
 ---
-title: Configuration
-description: Configure environment variables and onboarding options.
+title: "Configuration"
+description: "Complete guide to configuring ClawHalla: environment variables, models, gateway, and channels."
 ---
 
-## Environment file
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-Copy `.env.example` to `.env` and set the values you need.
+ClawHalla's configuration lives in three places:
 
-Common keys:
+1. **`.env`** -- Docker environment variables (API keys, tokens, passwords)
+2. **`openclaw.json`** -- OpenClaw runtime configuration (models, agents, channels, gateway)
+3. **Agent workspace files** -- Per-agent behavior (SOUL.md, AGENTS.md, IDENTITY.md)
 
-- `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`
-- `OPENCLAW_GATEWAY_TOKEN`
+---
 
-## Onboarding
+## Environment File (.env)
 
-Run interactive onboarding:
+The `.env` file is loaded by Docker Compose and injected into the container. Copy from the template and edit:
 
 ```bash
-openclaw onboard
+cp .env.example .env
 ```
 
-For automation, use non-interactive mode. See OpenClaw docs:
+### Required variables
 
-- [CLI Automation](https://docs.openclaw.ai/start/wizard-cli-automation)
-- [onboard command](https://docs.openclaw.ai/cli/onboard)
+```bash title=".env"
+# Your Anthropic API key (skip if using Claude Max OAuth)
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# Gateway authentication token (agents and MC use this to connect)
+OPENCLAW_GATEWAY_TOKEN=your-secure-random-token
+
+# Container user password
+CLAWDBOT_PASSWORD=your-password
+```
+
+### Optional variables
+
+```bash title=".env"
+# OpenAI API key (for GPT models, optional)
+OPENAI_API_KEY=sk-...
+
+# Vault encryption key (defaults to GATEWAY_TOKEN if not set)
+VAULT_KEY=your-vault-encryption-key
+
+# Telegram bot token (for Telegram channel)
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+
+# Discord bot token (for Discord channel)
+DISCORD_BOT_TOKEN=MTIz...
+
+# Database path (SQLite, defaults to internal path)
+DB_PATH=/home/clawdbot/.openclaw/mission-control.db
+
+# Node environment
+NODE_ENV=production
+
+# Gateway port (default 18789)
+OPENCLAW_GATEWAY_PORT=18789
+```
+
+See the [Environment Variables reference](/reference/environment/) for the full list.
+
+---
+
+## openclaw.json Structure
+
+The main runtime configuration file lives at `~/.openclaw/openclaw.json`. It is created during `openclaw onboard` but you can edit it directly.
+
+```json title="~/.openclaw/openclaw.json"
+{
+  "gateway": {
+    "port": 18789,
+    "bind": "0.0.0.0"
+  },
+  "auth": {
+    "profiles": ["anthropic:manual"]
+  },
+  "models": {
+    "anthropic/claude-opus-4-6": {},
+    "anthropic/claude-sonnet-4-6": {},
+    "anthropic/claude-haiku-4-5": {}
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-opus-4-6"
+      },
+      "models": {
+        "anthropic/claude-sonnet-4-6": {},
+        "anthropic/claude-haiku-4-5": {}
+      },
+      "workspace": "~/.openclaw/workspace",
+      "heartbeat": {
+        "every": "30m",
+        "target": "last",
+        "activeHours": { "start": "08:00", "end": "22:00" }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "Claw",
+        "model": "anthropic/claude-opus-4-6",
+        "workspace": "~/.openclaw/workspace",
+        "agentDir": "~/.openclaw/agents/main/agent"
+      }
+    ]
+  },
+  "channels": {}
+}
+```
+
+---
+
+## Model Configuration
+
+ClawHalla uses a tiered model strategy to balance capability and cost:
+
+| Tier | Use Case | Model | Cost |
+|------|----------|-------|------|
+| **Architecture / Decisions** | Chiefs, auditors | `anthropic/claude-opus-4-6` | $$$ |
+| **Specialist Work** | Coding, content, research | `anthropic/claude-sonnet-4-6` | $$ |
+| **Bulk / QA** | Formatting, summaries, testing | `anthropic/claude-haiku-4-5` | $ |
+
+### Setting the default model
+
+In `openclaw.json`, set the primary model under `agents.defaults`:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-opus-4-6"
+      }
+    }
+  }
+}
+```
+
+### Per-agent model assignment
+
+Each agent in the `agents.list` array can override the default:
+
+```json
+{
+  "id": "heimdall",
+  "name": "Heimdall",
+  "model": "anthropic/claude-haiku-4-5",
+  "workspace": "~/.openclaw/workspace/squads/dev/qa"
+}
+```
+
+### Model format
+
+Always use the `provider/model` format: `"anthropic/claude-opus-4-6"`.
+
+In isolated cron jobs, short aliases also work: `"opus"`, `"sonnet"`, `"haiku"`.
+
+---
+
+## Gateway Settings
+
+### Port and bind address
+
+```json title="openclaw.json"
+{
+  "gateway": {
+    "port": 18789,
+    "bind": "0.0.0.0"
+  }
+}
+```
+
+- **port:** Default is `18789`. Change if you have conflicts.
+- **bind:** Use `0.0.0.0` to accept connections from outside the container (required for MC). Use `127.0.0.1` for local-only access.
+
+### Authentication
+
+The gateway uses a token for authentication. Set it via `OPENCLAW_GATEWAY_TOKEN` in `.env` or `--token` flag.
+
+Clients must include the token in their WebSocket `connect` frame:
+
+```json
+{
+  "type": "req",
+  "method": "connect",
+  "params": {
+    "auth": {
+      "token": "your-gateway-token"
+    }
+  }
+}
+```
+
+### Managing the gateway
+
+```bash
+# Start gateway (foreground)
+openclaw gateway
+
+# Start gateway (background, no systemd)
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+
+# Check status
+openclaw status
+curl -I http://localhost:18789
+
+# Restart
+kill $(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $2}')
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+```
+
+---
+
+## Channel Setup
+
+Channels connect your agents to messaging platforms. Configure them in `openclaw.json` or via the CLI.
+
+### Telegram
+
+```bash
+openclaw channels add telegram
+```
+
+You will need:
+- A bot token from [@BotFather](https://t.me/BotFather)
+- Set `TELEGRAM_BOT_TOKEN` in `.env`
+
+### Discord
+
+```bash
+openclaw channels add discord
+```
+
+You will need:
+- A bot token from the [Discord Developer Portal](https://discord.com/developers)
+- Set `DISCORD_BOT_TOKEN` in `.env`
+
+### Binding agents to channels
+
+After adding a channel, bind an agent to handle messages from it:
+
+```json title="openclaw.json"
+{
+  "channels": {
+    "telegram": {
+      "type": "telegram",
+      "token": "env:TELEGRAM_BOT_TOKEN",
+      "bindings": [
+        {
+          "agentId": "main",
+          "chatIds": ["*"]
+        }
+      ]
+    }
+  }
+}
+```
+
+You can bind different agents to different chat IDs for multi-bot setups.
+
+---
+
+## Remote Access with Tailscale
+
+To access your ClawHalla instance from anywhere without exposing ports to the public internet:
+
+1. **Install Tailscale** inside the container:
+
+   ```bash
+   curl -fsSL https://tailscale.com/install.sh | sh
+   sudo tailscaled &
+   sudo tailscale up --authkey=tskey-auth-...
+   ```
+
+2. **Access via Tailscale IP:**
+
+   ```
+   http://100.x.x.x:3000     # Mission Control
+   ws://100.x.x.x:18789      # Gateway
+   ```
+
+3. **No firewall changes needed** -- Tailscale creates a secure mesh network.
+
+<Aside type="tip">
+  For dedicated server setups, see the [Server Setup guide](/getting-started/server-setup/) for complete Ubuntu configuration including firewall rules.
+</Aside>
+
+---
+
+## Bootstrap Files
+
+Agent behavior is configured through markdown files in the workspace. These are injected at the start of every session:
+
+| File | Purpose | Loaded When |
+|------|---------|-------------|
+| `AGENTS.md` | Operating instructions | Every session |
+| `SOUL.md` | Personality, tone, values | Every session |
+| `USER.md` | User profile | Every session |
+| `IDENTITY.md` | Name, role, emoji | Every session |
+| `TOOLS.md` | Local tool notes | Every session |
+| `HEARTBEAT.md` | Periodic checklist | Heartbeat runs only |
+| `BOOTSTRAP.md` | One-time first-run ritual | First session, then deleted |
+
+### Bootstrap limits
+
+- Max per file: `bootstrapMaxChars: 20000`
+- Max total: `bootstrapTotalMaxChars: 150000`
+- Blank files are skipped automatically
+- To disable: `{ "agent": { "skipBootstrap": true } }`
+
+---
+
+## Next Steps
+
+- [Claude Max OAuth Setup](/getting-started/claude-max/) -- Use Claude Max instead of API keys
+- [Server Setup](/getting-started/server-setup/) -- Dedicated Ubuntu server configuration
+- [Your First Agent](/guides/first-agent/) -- Create and test a custom agent

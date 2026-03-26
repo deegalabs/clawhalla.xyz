@@ -1,33 +1,239 @@
 ---
-title: Installation
-description: How to install ClawHalla on your system.
+title: "Installation"
+description: "Complete guide to installing ClawHalla on your system, from one-liner to manual setup."
 ---
+
+import { Tabs, TabItem, Aside, Steps } from '@astrojs/starlight/components';
 
 ## Prerequisites
 
-- Docker (v20.10+)
-- Docker Compose (v2.0+)
-- Git
-- Anthropic API key (or your preferred provider)
+Before installing ClawHalla, make sure your system meets these requirements:
 
-## One-liner installation
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **Docker** | v20.10+ | Latest stable |
+| **Docker Compose** | v2.0+ (plugin) | Latest stable |
+| **RAM** | 4 GB | 8 GB+ |
+| **Disk** | 10 GB free | 20 GB+ |
+| **OS** | Linux, macOS, WSL2 | Ubuntu 24.04 |
+| **Internet** | Required for setup | Required for API calls |
+
+You will also need an **Anthropic API key** or a **Claude Max subscription** for model access.
+See the [Claude Max setup guide](/getting-started/claude-max/) for OAuth-based authentication.
+
+---
+
+## Quick Install (One-liner)
+
+The fastest way to get ClawHalla running:
 
 ```bash
 curl -fsSL https://clawhalla.xyz/install.sh | bash
 ```
 
-## Manual installation
+This script will:
+1. Clone the repository
+2. Create a `.env` file from the template
+3. Prompt you for your Anthropic API key
+4. Build and start the Docker containers
+5. Print next-step instructions
+
+---
+
+## Manual Installation
+
+For full control over the setup process, install step by step.
+
+<Steps>
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/deegalabs/clawhalla.git
+   cd clawhalla
+   ```
+
+2. **Create your environment file**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and set your API key and gateway token:
+
+   ```bash title=".env"
+   ANTHROPIC_API_KEY=sk-ant-...
+   OPENCLAW_GATEWAY_TOKEN=your-secure-token-here
+   CLAWDBOT_PASSWORD=your-password
+   ```
+
+   See the [Environment Variables reference](/reference/environment/) for all available options.
+
+3. **Build and start the containers**
+
+   ```bash
+   bash scripts/start.sh
+   ```
+
+   This builds the Docker image (Ubuntu 24.04 with Node 24, pnpm, zsh, and OpenClaw CLI pre-installed) and starts the services.
+
+4. **Enter the container**
+
+   ```bash
+   docker compose exec clawhalla zsh
+   ```
+
+   You will land in the ClawHalla container as the `clawdbot` user with a pre-configured zsh shell (oh-my-zsh + spaceship theme).
+
+5. **Run the onboarding wizard**
+
+   ```bash
+   openclaw onboard
+   ```
+
+   The wizard walks you through:
+   - Model provider configuration
+   - Agent identity setup
+   - Workspace initialization
+   - Channel setup (Telegram, Discord, etc.)
+
+6. **Access Mission Control**
+
+   Open your browser and navigate to:
+
+   ```
+   http://localhost:3000
+   ```
+
+   Mission Control is the ClawHalla management dashboard where you can manage tasks, agents, approvals, memory, and more.
+
+7. **Verify your installation**
+
+   ```bash
+   openclaw models status
+   ```
+
+   You should see your configured models listed with their status. If the gateway is running correctly, all models will show as available.
+
+</Steps>
+
+---
+
+## Post-Installation
+
+Once installed, start the gateway if it is not already running:
 
 ```bash
-git clone https://github.com/deegalabs/clawhalla.git
-cd clawhalla
-cp .env.example .env
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+```
+
+Wait about 15 seconds, then verify:
+
+```bash
+curl -I http://localhost:18789
+```
+
+You should receive an HTTP response indicating the gateway is active.
+
+### Useful Aliases
+
+The container comes with pre-configured aliases:
+
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `oc` | `openclaw` | Short for OpenClaw CLI |
+| `mc` | `cd ~/mission-control && pnpm dev` | Start Mission Control |
+| `gw` | `openclaw gateway` | Gateway commands |
+| `agents` | `openclaw agent list` | List agents |
+| `crons` | `openclaw cron list` | List cron jobs |
+| `logs` | `tail -f /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log` | Follow today's logs |
+
+---
+
+## Troubleshooting
+
+### Container fails to start
+
+```bash
+docker compose logs clawhalla
+```
+
+Common causes:
+- **Port conflict:** Ports 18789 or 3000 are already in use. Change them in `docker-compose.yml`.
+- **Missing `.env` file:** Make sure you copied `.env.example` to `.env`.
+- **Docker not running:** Verify with `docker info`.
+
+### "openclaw: command not found"
+
+This means the CLI is not in the PATH. Inside the container, run:
+
+```bash
+source ~/.nvm/nvm.sh
+pnpm add -g openclaw
+```
+
+### Gateway does not start
+
+Check if another process is using port 18789:
+
+```bash
+lsof -i :18789
+```
+
+Kill any existing gateway process and restart:
+
+```bash
+kill $(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $2}')
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+```
+
+### Models show as unavailable
+
+Verify your API key is set:
+
+```bash
+echo $ANTHROPIC_API_KEY
+```
+
+If using Claude Max OAuth, follow the [Claude Max setup guide](/getting-started/claude-max/).
+
+Check the gateway logs for authentication errors:
+
+```bash
+tail -50 /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
+```
+
+### Mission Control returns a blank page
+
+Make sure the MC container is running:
+
+```bash
+docker compose ps
+```
+
+If running the built-in MC (inside the main container), start it manually:
+
+```bash
+cd ~/mission-control && pnpm dev
+```
+
+### Permission errors on volumes
+
+The entrypoint script fixes permissions automatically, but if you see errors:
+
+```bash
+sudo chown -R clawdbot:clawdbot ~/.openclaw
+```
+
+### Resetting everything
+
+To start fresh without losing your API keys:
+
+```bash
+bash scripts/reset.sh
 bash scripts/start.sh
 ```
 
-Then enter the container and onboard:
-
-```bash
-docker compose exec clawhalla bash
-openclaw onboard
-```
+<Aside type="caution">
+  `reset.sh` will delete workspace data, sessions, and cron jobs. Back up anything important first.
+</Aside>

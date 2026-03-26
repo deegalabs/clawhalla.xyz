@@ -1,0 +1,1102 @@
+---
+title: "API Reference"
+description: "Complete reference for all Mission Control API endpoints."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Mission Control exposes a REST API at `http://localhost:3000/api/`. All endpoints return JSON. There is no authentication required for local access (the gateway token protects the OpenClaw gateway separately).
+
+Base URL: `http://localhost:3000` (or `http://localhost:3333` if using the separate MC container)
+
+---
+
+## Health
+
+### GET /api/health
+
+Check if Mission Control is running.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-26T10:00:00.000Z"
+}
+```
+
+---
+
+## Tasks
+
+### GET /api/tasks
+
+List all tasks, ordered by last updated.
+
+**Response:**
+```json
+[
+  {
+    "id": "task_abc123",
+    "title": "Implement OAuth flow",
+    "description": "Add Claude Max OAuth support",
+    "status": "in_progress",
+    "priority": "high",
+    "assignedTo": "freya",
+    "projectId": "clawhalla",
+    "storyId": "story_xyz",
+    "sprintId": "sprint_01",
+    "estimatedHours": 8,
+    "actualHours": null,
+    "tags": "auth,security",
+    "notes": null,
+    "createdAt": "2026-03-25T08:00:00.000Z",
+    "updatedAt": "2026-03-25T14:00:00.000Z",
+    "completedAt": null
+  }
+]
+```
+
+### POST /api/tasks
+
+Create a new task.
+
+**Request body:**
+```json
+{
+  "title": "Fix login redirect",
+  "description": "Users are redirected to 404 after login",
+  "status": "backlog",
+  "priority": "high",
+  "assignedTo": "freya",
+  "projectId": "clawhalla",
+  "storyId": "story_xyz",
+  "sprintId": "sprint_01",
+  "estimatedHours": 4,
+  "tags": "bug,auth"
+}
+```
+
+**Response:** `201 Created` with the created task object.
+
+### GET /api/tasks/[id]
+
+Get a single task by ID.
+
+**Response:** Task object (same shape as list items).
+
+### PATCH /api/tasks/[id]
+
+Update a task. Send only the fields you want to change.
+
+**Request body:**
+```json
+{
+  "status": "review",
+  "actualHours": 6,
+  "notes": "Completed. PR #42 ready for review."
+}
+```
+
+**Response:** Updated task object.
+
+### DELETE /api/tasks/[id]
+
+Delete a task permanently.
+
+**Response:**
+```json
+{ "ok": true }
+```
+
+---
+
+## Sprints
+
+### GET /api/sprints
+
+List all sprints.
+
+**Response:**
+```json
+[
+  {
+    "id": "sprint_01",
+    "name": "Sprint 1 - Core Features",
+    "status": "active",
+    "startDate": "2026-03-20",
+    "endDate": "2026-03-27",
+    "storyIds": "[\"story_01\",\"story_02\"]",
+    "createdAt": "2026-03-20T08:00:00.000Z",
+    "updatedAt": "2026-03-25T10:00:00.000Z"
+  }
+]
+```
+
+### POST /api/sprints
+
+Create a sprint.
+
+**Request body:**
+```json
+{
+  "name": "Sprint 2 - Polish",
+  "startDate": "2026-03-27",
+  "endDate": "2026-04-03",
+  "storyIds": ["story_03", "story_04"]
+}
+```
+
+### PATCH /api/sprints
+
+Update a sprint by ID (include `id` in the body).
+
+### DELETE /api/sprints
+
+Delete a sprint (pass `id` as query parameter).
+
+---
+
+## Epics
+
+### GET /api/epics
+
+List all epics.
+
+**Response:**
+```json
+[
+  {
+    "id": "epic_01",
+    "title": "Mission Control Dashboard",
+    "status": "active",
+    "priority": "high",
+    "createdBy": "odin",
+    "approvedBy": "daniel",
+    "notes": "Full dashboard with task management and agent monitoring",
+    "createdAt": "2026-03-20T08:00:00.000Z",
+    "updatedAt": "2026-03-25T10:00:00.000Z",
+    "completedAt": null
+  }
+]
+```
+
+### POST /api/epics
+
+Create an epic.
+
+### PATCH /api/epics
+
+Update an epic (include `id` in the body).
+
+### DELETE /api/epics
+
+Delete an epic (pass `id` as query parameter).
+
+---
+
+## Projects
+
+### GET /api/projects
+
+List all projects.
+
+**Response:**
+```json
+[
+  {
+    "id": "clawhalla",
+    "name": "ClawHalla",
+    "description": "Docker-based launcher for OpenClaw",
+    "status": "active",
+    "squad": "dev_squad",
+    "startDate": "2026-03-01T00:00:00.000Z",
+    "endDate": null,
+    "createdAt": "2026-03-01T00:00:00.000Z",
+    "updatedAt": "2026-03-25T10:00:00.000Z"
+  }
+]
+```
+
+### POST /api/projects
+
+Create a project.
+
+### PATCH /api/projects
+
+Update a project.
+
+### DELETE /api/projects
+
+Delete a project.
+
+---
+
+## Activities
+
+### GET /api/activities
+
+List recent activities (agent actions logged by the workspace watcher).
+
+**Response:**
+```json
+[
+  {
+    "id": "act_m1x2y3_a4b5",
+    "agentId": "freya",
+    "action": "task_updated",
+    "target": "tasks.yaml",
+    "details": "projects/clawhalla/board/doing/tasks.yaml",
+    "timestamp": "2026-03-25T14:30:00.000Z"
+  }
+]
+```
+
+### POST /api/activities
+
+Log a custom activity.
+
+**Request body:**
+```json
+{
+  "agentId": "bragi",
+  "action": "content_published",
+  "target": "LinkedIn post",
+  "details": "Published post about AI agents"
+}
+```
+
+---
+
+## Approvals
+
+### GET /api/approvals
+
+List all approvals, separated into pending and history.
+
+**Response:**
+```json
+{
+  "pending": [
+    {
+      "id": "apr_m1x2y3",
+      "taskId": "LinkedIn post: AI agents",
+      "requestedBy": "bragi",
+      "approver": "daniel",
+      "status": "pending",
+      "command": "publish",
+      "reason": "Draft ready. 1200 words, 3 images.",
+      "createdAt": "2026-03-25T10:00:00.000Z",
+      "resolvedAt": null
+    }
+  ],
+  "history": [
+    {
+      "id": "apr_k9j8h7",
+      "taskId": "Deploy v0.2.0",
+      "requestedBy": "odin",
+      "approver": "daniel",
+      "status": "approved",
+      "command": "deploy",
+      "reason": "All tests passing. Ready for production.",
+      "createdAt": "2026-03-24T16:00:00.000Z",
+      "resolvedAt": "2026-03-24T16:30:00.000Z"
+    }
+  ]
+}
+```
+
+### POST /api/approvals
+
+Create an approval request.
+
+**Request body:**
+```json
+{
+  "title": "Publish LinkedIn post",
+  "type": "publish",
+  "requestedBy": "bragi",
+  "context": "Draft reviewed by Frigg. 1200 words about AI agents in dev."
+}
+```
+
+### PATCH /api/approvals/[id]
+
+Approve or reject an approval.
+
+**Request body:**
+```json
+{
+  "status": "approved",
+  "reason": "Looks good, publish it."
+}
+```
+
+Valid statuses: `approved`, `rejected`.
+
+---
+
+## Vault
+
+The vault stores encrypted secrets (API keys, tokens). Values are encrypted with AES-256-GCM.
+
+### GET /api/vault
+
+List all secrets. **Values are never included in the response.**
+
+**Response:**
+```json
+{
+  "ok": true,
+  "secrets": [
+    {
+      "id": "sec_m1x2y3",
+      "name": "LINKEDIN_ACCESS_TOKEN",
+      "description": "LinkedIn API access token",
+      "category": "api_key",
+      "createdBy": "daniel",
+      "createdAt": "2026-03-25T08:00:00.000Z",
+      "updatedAt": "2026-03-25T08:00:00.000Z",
+      "lastAccessedAt": null
+    }
+  ]
+}
+```
+
+### POST /api/vault
+
+Create or update a secret.
+
+**Request body:**
+```json
+{
+  "name": "LINKEDIN_ACCESS_TOKEN",
+  "value": "your-actual-secret-value",
+  "description": "LinkedIn API access token",
+  "category": "api_key"
+}
+```
+
+### DELETE /api/vault
+
+Delete a secret.
+
+**Query parameters:** `?name=LINKEDIN_ACCESS_TOKEN`
+
+### POST /api/vault/reveal
+
+Decrypt and return a secret value.
+
+**Request body:**
+```json
+{
+  "name": "LINKEDIN_ACCESS_TOKEN"
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "name": "LINKEDIN_ACCESS_TOKEN",
+  "value": "your-actual-secret-value"
+}
+```
+
+<Aside type="caution">
+  The reveal endpoint returns the decrypted value. Use it only when you need the actual secret, and never log the response.
+</Aside>
+
+### POST /api/vault/inject
+
+Inject a vault secret as an environment variable into the runtime.
+
+**Request body:**
+```json
+{
+  "name": "LINKEDIN_ACCESS_TOKEN",
+  "envVar": "LINKEDIN_TOKEN"
+}
+```
+
+---
+
+## Chat
+
+### POST /api/chat
+
+Send a message to an agent. Supports single agent and party mode (multi-agent).
+
+**Single agent mode:**
+```json
+{
+  "message": "What tasks are assigned to you?",
+  "agentId": "odin"
+}
+```
+
+**Party mode (multi-agent):**
+```json
+{
+  "message": "Discuss the architecture for the new feature",
+  "agentIds": ["odin", "thor", "freya"],
+  "mode": "party"
+}
+```
+
+**Response:** Streamed or JSON response with agent output.
+
+---
+
+## Crons
+
+### GET /api/crons
+
+List all cron jobs.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "jobs": [
+    {
+      "id": "cron_abc123",
+      "name": "daily-standup",
+      "cron": "0 9 * * *",
+      "agentId": "odin",
+      "message": "Generate standup report",
+      "enabled": true,
+      "lastRun": "2026-03-25T09:00:00.000Z",
+      "nextRun": "2026-03-26T09:00:00.000Z"
+    }
+  ]
+}
+```
+
+### POST /api/crons
+
+Create a new cron job.
+
+**Request body:**
+```json
+{
+  "name": "weekly-report",
+  "agentId": "loki",
+  "cron": "0 18 * * 5",
+  "message": "Generate weekly analytics report",
+  "model": "sonnet",
+  "timezone": "America/Sao_Paulo"
+}
+```
+
+### PATCH /api/crons
+
+Update or control a cron job.
+
+**Enable/disable:**
+```json
+{ "id": "cron_abc123", "action": "enable" }
+{ "id": "cron_abc123", "action": "disable" }
+```
+
+**Trigger manually:**
+```json
+{ "id": "cron_abc123", "action": "run" }
+```
+
+**Edit fields:**
+```json
+{
+  "id": "cron_abc123",
+  "name": "updated-name",
+  "cron": "0 10 * * *",
+  "message": "Updated prompt"
+}
+```
+
+### DELETE /api/crons
+
+Delete a cron job.
+
+**Query parameters:** `?id=cron_abc123`
+
+---
+
+## Terminal
+
+### POST /api/terminal
+
+Execute a shell command inside the container.
+
+**Request body:**
+```json
+{
+  "command": "openclaw status"
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "output": "Gateway running on port 18789\n...",
+  "exitCode": 0
+}
+```
+
+---
+
+## Search
+
+### GET /api/search
+
+Full-text search across workspace files.
+
+**Query parameters:**
+- `q` -- Search query (minimum 2 characters, required)
+- `category` -- Filter by category (optional)
+- `limit` -- Max results (default: 20)
+
+**Example:** `GET /api/search?q=deployment&limit=10`
+
+**Response:**
+```json
+{
+  "ok": true,
+  "query": "deployment",
+  "count": 3,
+  "results": [
+    {
+      "path": "skills/engineering/ci-cd-patterns.md",
+      "score": 0.85,
+      "excerpt": "...deployment pipeline using GitHub Actions..."
+    }
+  ],
+  "stats": {
+    "totalFiles": 150,
+    "indexedAt": "2026-03-25T12:00:00.000Z"
+  }
+}
+```
+
+### POST /api/search
+
+Trigger a full reindex of workspace files.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "filesIndexed": 150,
+  "duration": 1234
+}
+```
+
+---
+
+## SSE (Server-Sent Events)
+
+### GET /api/sse
+
+Subscribe to real-time workspace events. Uses the Server-Sent Events protocol.
+
+**Event types:**
+
+```
+data: {"type":"connected","timestamp":1711360000000}
+
+data: {"type":"file_change","event":{"type":"created","path":"memory/2026-03-26.md","timestamp":1711360000000}}
+
+data: {"type":"file_change","event":{"type":"updated","path":"projects/clawhalla/board/doing/tasks.yaml","timestamp":1711360001000}}
+
+data: {"type":"ping","timestamp":1711360030000}
+```
+
+**Usage in JavaScript:**
+```javascript
+const sse = new EventSource('/api/sse');
+sse.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'file_change') {
+    console.log(`File ${data.event.type}: ${data.event.path}`);
+  }
+};
+```
+
+Sends a heartbeat ping every 30 seconds to keep the connection alive.
+
+---
+
+## Agents
+
+### GET /api/agents/factory
+
+List available persona templates for agent creation.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "templates": [
+    {
+      "id": "senior-dev",
+      "name": "Senior Dev",
+      "tier": "execution",
+      "path": "execution/senior-dev.md"
+    }
+  ]
+}
+```
+
+### POST /api/agents/factory
+
+Create a new agent from a template.
+
+**Request body:**
+```json
+{
+  "templateId": "senior-dev",
+  "name": "Atlas",
+  "agentId": "atlas",
+  "emoji": "gear",
+  "model": "claude-sonnet-4-6",
+  "squad": "dev_squad",
+  "reportsTo": "thor"
+}
+```
+
+### GET /api/agents/health
+
+Get health status of all registered agents.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "agents": [
+    {
+      "id": "main",
+      "state": "active",
+      "lastActivityMs": 1711360000000,
+      "idleMinutes": 2,
+      "model": "claude-opus-4-6",
+      "sessionCount": 3
+    },
+    {
+      "id": "odin",
+      "state": "idle",
+      "lastActivityMs": 1711350000000,
+      "idleMinutes": 45,
+      "model": "claude-sonnet-4-6",
+      "sessionCount": 1
+    }
+  ]
+}
+```
+
+Health states: `active` (under 2 min idle), `idle` (2-5 min or over 30 min), `stalled` (5-15 min), `stuck` (15-30 min), `offline` (gateway down).
+
+### GET /api/agents/coverage
+
+Find agents that can cover for a given agent.
+
+**Query parameters:** `?agent=freya`
+
+**Response:**
+```json
+{
+  "ok": true,
+  "target": "freya",
+  "candidates": [
+    {
+      "id": "volund",
+      "role": "dev_github",
+      "skillOverlap": 3,
+      "sameTier": true
+    }
+  ]
+}
+```
+
+---
+
+## Packs
+
+### GET /api/packs
+
+List available squad packs.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "packs": [
+    {
+      "name": "Social Media Squad",
+      "version": "1.0.0",
+      "description": "Content research, creation, and publishing",
+      "agents": 3
+    }
+  ]
+}
+```
+
+### POST /api/packs
+
+Install a squad pack. Creates all agents, workspace directories, and org structure entries.
+
+---
+
+## Git
+
+### GET /api/git
+
+Get repository status.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "branch": "main",
+  "commits": [
+    { "hash": "abc1234", "message": "feat: add vault endpoint" }
+  ],
+  "dirty": false,
+  "changedFiles": [],
+  "ahead": 0,
+  "behind": 0,
+  "remote": "https://github.com/deegalabs/clawhalla.git",
+  "lastCommitDate": "2026-03-25 14:00:00 -0300"
+}
+```
+
+### POST /api/git
+
+Execute a git operation (commit, push, pull).
+
+---
+
+## Council
+
+### GET /api/council/session
+
+List council sessions (multi-agent deliberation).
+
+### POST /api/council/session
+
+Start a new council session where multiple agents discuss a topic.
+
+**Request body:**
+```json
+{
+  "topic": "Should we migrate to a monorepo?",
+  "agents": ["odin", "thor", "freya"],
+  "rounds": 3
+}
+```
+
+---
+
+## Feedback
+
+### GET /api/feedback
+
+List feedback entries. Filter by agent with `?agent=bragi`.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "entries": [
+    {
+      "id": "fb_001",
+      "agentId": "bragi",
+      "taskId": "CLA-T-055",
+      "type": "correction",
+      "content": "Posts should be shorter -- max 800 words",
+      "context": "Post was 1500 words, too dense",
+      "createdAt": "2026-03-25T10:00:00.000Z",
+      "appliedTo": ["squads/clop-cabinet/cma/AGENTS.md"]
+    }
+  ]
+}
+```
+
+### POST /api/feedback
+
+Submit feedback for an agent.
+
+**Request body:**
+```json
+{
+  "agentId": "bragi",
+  "taskId": "CLA-T-055",
+  "type": "correction",
+  "content": "LinkedIn posts should be max 800 words",
+  "context": "Previous post was too long"
+}
+```
+
+Types: `correction`, `praise`, `pattern`, `rule`.
+
+---
+
+## Usage
+
+### GET /api/usage
+
+Get token usage and cost summary.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "today": {
+    "totalInputTokens": 150000,
+    "totalOutputTokens": 45000,
+    "estimatedCostCents": 350,
+    "byAgent": {
+      "claw": { "input": 50000, "output": 15000, "cost": 150 },
+      "odin": { "input": 100000, "output": 30000, "cost": 200 }
+    }
+  },
+  "allTime": {
+    "totalEvents": 500,
+    "estimatedCostCents": 5000
+  }
+}
+```
+
+### POST /api/usage
+
+Log a cost event.
+
+**Request body:**
+```json
+{
+  "agentId": "odin",
+  "model": "claude-sonnet-4-6",
+  "action": "session",
+  "inputTokens": 5000,
+  "outputTokens": 1500,
+  "taskId": "CLA-T-042"
+}
+```
+
+---
+
+## Memory
+
+### GET /api/memory
+
+List daily memory files from agent workspaces.
+
+**Response:**
+```json
+[
+  {
+    "name": "2026-03-25.md",
+    "path": "/home/clawdbot/.openclaw/workspace/memory/2026-03-25.md",
+    "date": "2026-03-25",
+    "size": 4096,
+    "wordCount": 650,
+    "content": "# 2026-03-25\n\n## Session Notes\n...",
+    "modifiedAt": "2026-03-25T23:00:00.000Z"
+  }
+]
+```
+
+### GET /api/memory/longterm
+
+Get the curated long-term memory file (MEMORY.md).
+
+**Response:**
+```json
+{
+  "content": "# Long-Term Memory\n\n## Key Decisions\n...",
+  "wordCount": 1200,
+  "modifiedAt": "2026-03-25T20:00:00.000Z",
+  "size": 8192
+}
+```
+
+---
+
+## Docs
+
+### GET /api/docs
+
+Scan and return all markdown and YAML files in the workspace.
+
+**Response:**
+```json
+[
+  {
+    "name": "AGENTS.md",
+    "path": "/home/clawdbot/.openclaw/workspace/AGENTS.md",
+    "category": "Other",
+    "size": 10227,
+    "wordCount": 1500,
+    "modifiedAt": "2026-03-23T22:11:00.000Z",
+    "content": "## Organizational Context..."
+  }
+]
+```
+
+Categories: `Journal`, `Insights`, `Transcription`, `ADR`, `Report`, `Other`.
+
+---
+
+## Org Structure
+
+### GET /api/org-structure
+
+Get the full organizational hierarchy.
+
+**Response:** Parsed `org_structure.yaml` with agent details, squads, tiers, and escalation chains.
+
+---
+
+## Gateway
+
+### GET /api/gateway/sessions
+
+List active gateway sessions (proxied through the gateway).
+
+**Response:**
+```json
+{
+  "ok": true,
+  "sessions": [
+    {
+      "key": "main-session-key",
+      "agentId": "main",
+      "lastActivity": 1711360000000,
+      "model": "claude-opus-4-6"
+    }
+  ]
+}
+```
+
+### GET /api/gateway/crons
+
+List cron jobs from the gateway directly.
+
+---
+
+## LinkedIn
+
+### GET /api/linkedin
+
+Check LinkedIn connection status.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "connected": true,
+  "profile": {
+    "name": "Daniel Gorgonha",
+    "email": "daniel@example.com",
+    "sub": "abc123"
+  }
+}
+```
+
+### POST /api/linkedin
+
+Publish a LinkedIn post.
+
+**Request body:**
+```json
+{
+  "text": "Your post content here...",
+  "imageUrl": "https://example.com/image.jpg"
+}
+```
+
+Requires `LINKEDIN_ACCESS_TOKEN` in the vault.
+
+---
+
+## Skills
+
+### GET /api/skills/import
+
+List installed skills by category.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "categories": [
+    {
+      "category": "engineering",
+      "skills": ["docker-best-practices", "ci-cd-patterns"]
+    },
+    {
+      "category": "content",
+      "skills": ["seo-checklist"]
+    }
+  ]
+}
+```
+
+### POST /api/skills/import
+
+Import a skill from URL or raw content.
+
+**Request body:**
+```json
+{
+  "name": "react-patterns",
+  "category": "engineering",
+  "content": "# React Patterns\n\n## Component design...",
+  "url": null
+}
+```
+
+---
+
+## Board (Legacy)
+
+These endpoints provide direct board access through workspace YAML files.
+
+### GET /api/board/sync
+
+Sync board state from workspace files.
+
+**Query parameters:** `?project=clawhalla`
+
+### PATCH /api/board/update
+
+Update a task status on the board.
+
+**Request body:**
+```json
+{
+  "project": "clawhalla",
+  "taskId": "CLA-T-042",
+  "status": "in_progress",
+  "agentId": "thor"
+}
+```
+
+### POST /api/board/import
+
+Import board data from external YAML files.
+
+---
+
+## Heartbeat
+
+### POST /api/heartbeat
+
+Trigger a heartbeat check for an agent.
+
+**Request body:**
+```json
+{
+  "agentId": "frigg"
+}
+```

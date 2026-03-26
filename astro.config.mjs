@@ -23,6 +23,8 @@ export default defineConfig({
             { label: 'Introduction', link: '/' },
             { label: 'Installation', link: '/getting-started/installation/' },
             { label: 'Configuration', link: '/getting-started/configuration/' },
+            { label: 'Claude Max Setup', link: '/getting-started/claude-max/' },
+            { label: 'Server Setup', link: '/getting-started/server-setup/' },
           ],
         },
         {
@@ -30,14 +32,18 @@ export default defineConfig({
           items: [
             { label: 'Your First Agent', link: '/guides/first-agent/' },
             { label: 'Customization', link: '/guides/customization/' },
+            { label: 'Content Pipeline', link: '/guides/content-pipeline/' },
+            { label: 'Autopilot', link: '/guides/autopilot/' },
           ],
         },
         {
           label: 'Reference',
           items: [
-            { label: 'Scripts', link: '/reference/scripts/' },
+            { label: 'API Reference', link: '/reference/api/' },
+            { label: 'Architecture', link: '/reference/architecture/' },
             { label: 'Docker', link: '/reference/docker/' },
             { label: 'Environment Variables', link: '/reference/environment/' },
+            { label: 'Scripts', link: '/reference/scripts/' },
           ],
         },
         {
