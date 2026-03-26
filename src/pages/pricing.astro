@@ -4,63 +4,74 @@ import Pricing from '../components/Pricing.astro';
 import Footer from '../components/Footer.astro';
 
 const features = [
-  { name: 'Agents included', free: '3 (Claw, Thor, Bragi)', pro: 'All 15 agents', enterprise: 'All 15 + custom' },
-  { name: 'Squads', free: '1 (core)', pro: '4 squads', enterprise: 'Unlimited' },
-  { name: 'Mission Control screens', free: '6 basic', pro: 'All 18 screens', enterprise: 'All 18 + custom' },
-  { name: 'API calls / month', free: '1,000', pro: '50,000', enterprise: 'Unlimited' },
-  { name: 'Storage', free: '1 GB', pro: '50 GB', enterprise: 'Unlimited' },
-  { name: 'Support', free: 'Community', pro: 'Priority email', enterprise: 'Dedicated engineer' },
-  { name: 'Smart contracts', free: '---', pro: 'Base L2 integration', enterprise: 'Multi-chain' },
-  { name: 'Custom agents', free: '---', pro: '---', enterprise: 'Included' },
-  { name: 'Autopilot mode', free: '---', pro: 'Included', enterprise: 'Included' },
-  { name: 'Secret vault', free: '---', pro: 'AES-256-GCM', enterprise: 'AES-256-GCM + HSM' },
-  { name: 'Content pipeline', free: '---', pro: 'Included', enterprise: 'Included' },
-  { name: 'Marketplace access', free: 'Browse only', pro: 'Buy + sell packs', enterprise: 'Buy + sell + custom store' },
-  { name: 'SSO / SAML', free: '---', pro: '---', enterprise: 'Included' },
-  { name: 'SLA guarantee', free: '---', pro: '---', enterprise: '99.9%' },
+  { name: 'Agents included', value: '4 starter agents (expandable)' },
+  { name: 'Squads', value: '1 core squad (more via packs)' },
+  { name: 'Mission Control screens', value: 'All 18 screens' },
+  { name: 'Task board', value: 'Kanban with sprints & epics' },
+  { name: 'Agent chat', value: '1:1 and group chat' },
+  { name: 'Web terminal', value: 'Full terminal access' },
+  { name: 'Secret vault', value: 'AES-256-GCM encrypted' },
+  { name: 'Autopilot mode', value: 'Included' },
+  { name: 'Content pipeline', value: 'Included' },
+  { name: 'Squad packs', value: 'Install community packs' },
+  { name: 'Support', value: 'Community (GitHub)' },
+  { name: 'License', value: 'MIT — forever free' },
 ];
 
 const faqs = [
   {
     question: 'Is it really free?',
-    answer: 'Yes! The core of ClawHalla is MIT-licensed and always will be. You can self-host it with Docker and use 3 agents at no cost. The open source core is fully functional — no paywalls, no time limits.',
+    answer: 'Yes! ClawHalla is MIT-licensed and completely free. You can self-host it with Docker and use all features at no cost. No paywalls, no time limits, no feature gates.',
   },
   {
-    question: "What's included in Pro?",
-    answer: 'Pro unlocks all 15 trained agents across 4 specialized squads, autopilot mode, the content pipeline, AES-256-GCM secret vault, premium squad packs, marketplace access, and priority email support.',
+    question: 'How many agents can I run?',
+    answer: 'ClawHalla ships with 4 starter agents out of the box. You can install additional agents through community squad packs, or create your own. Agent personas are just .md files — easy to create and share.',
   },
   {
-    question: 'Can I try Pro for free?',
-    answer: 'A 14-day free trial is coming soon. Sign up for our newsletter to be notified when it launches. No credit card will be required to start the trial.',
-  },
-  {
-    question: 'Do I need crypto?',
-    answer: 'No. Cryptocurrency is completely optional. The marketplace supports traditional payment methods. Blockchain features (Base L2 smart contracts, wallet connect) are available in Pro but not required for any core functionality.',
-  },
-  {
-    question: 'Can I create my own packs?',
-    answer: 'Absolutely. Agent personas are just .md files — you can create, customize, and share them freely. Pro and Enterprise users can sell their packs on the ClawHalla Marketplace and earn revenue.',
+    question: 'Can I create my own agent packs?',
+    answer: 'Absolutely. Agent personas are just .md files — you can create, customize, and share them freely. Drop them in the workspace directory and they are ready to use.',
   },
   {
     question: 'What AI models are supported?',
-    answer: 'ClawHalla currently supports Claude Opus 4.6, Claude Sonnet 4.6, and Claude Haiku 4.5 via the OpenClaw gateway. GPT-4o support is on the roadmap. You bring your own API keys or use ClawHalla Cloud.',
+    answer: 'ClawHalla currently supports Claude Opus 4.6, Claude Sonnet 4.6, and Claude Haiku 4.5 via the OpenClaw gateway. You bring your own API keys.',
+  },
+  {
+    question: 'How do I deploy it?',
+    answer: 'One command: curl -fsSL https://clawhalla.xyz/install.sh | bash. You need Docker installed. The setup script handles everything else.',
+  },
+  {
+    question: 'Is there a hosted/cloud version?',
+    answer: 'Not yet. ClawHalla is currently self-hosted only. A cloud version is on the roadmap. Sign up for the newsletter to be notified.',
   },
 ];
 ---
 
-<Layout title="Pricing — ClawHalla" description="Simple, transparent pricing. Start free with the open source core, upgrade to Pro for all 15 agents and premium features.">
+<script>
+  // FAQ accordion chevron animation
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll<HTMLInputElement>('input[id^="faq-"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const label = document.querySelector(`label[for="${input.id}"]`);
+        const chevron = label?.querySelector('.faq-chevron') as HTMLElement | null;
+        if (chevron) chevron.style.transform = input.checked ? 'rotate(180deg)' : '';
+      });
+    });
+  });
+</script>
+
+<Layout title="What's Included — ClawHalla" description="Everything included in ClawHalla — free and open source. Docker setup, Mission Control, starter agents, and more.">
   <main>
-    <!-- Pricing cards -->
+    <!-- What's Included cards -->
     <Pricing />
 
-    <!-- Feature comparison table -->
+    <!-- Feature list -->
     <section class="py-20 px-4 bg-dark">
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-3xl mx-auto">
         <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
-          <span class="text-primary">Feature</span> Comparison
+          <span class="text-primary">Full</span> Feature List
         </h2>
         <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-          See exactly what you get with each plan.
+          Everything you get with ClawHalla — no tiers, no upsells.
         </p>
 
         <div class="overflow-x-auto rounded-xl border border-dark-200">
@@ -68,33 +79,17 @@ const faqs = [
             <thead>
               <tr class="bg-dark-50 border-b border-dark-200">
                 <th class="text-left py-4 px-6 text-gray-300 font-semibold">Feature</th>
-                <th class="text-center py-4 px-6 text-gray-300 font-semibold">Free</th>
-                <th class="text-center py-4 px-6 text-primary font-semibold border-x border-primary/20 bg-primary/5">Pro</th>
-                <th class="text-center py-4 px-6 text-gray-300 font-semibold">Enterprise</th>
+                <th class="text-left py-4 px-6 text-gray-300 font-semibold">Details</th>
               </tr>
             </thead>
             <tbody>
               {features.map((feat, i) => (
                 <tr class={`border-b border-dark-200 ${i % 2 === 0 ? 'bg-dark' : 'bg-dark-50/50'}`}>
                   <td class="py-3 px-6 text-gray-300 font-medium">{feat.name}</td>
-                  <td class="py-3 px-6 text-center text-gray-400">
-                    {feat.free === '---' ? (
-                      <svg class="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                    ) : feat.free}
-                  </td>
-                  <td class="py-3 px-6 text-center text-gray-300 border-x border-primary/20 bg-primary/5">
-                    {feat.pro === '---' ? (
-                      <svg class="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                    ) : feat.pro === 'Included' ? (
-                      <svg class="w-4 h-4 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-                    ) : feat.pro}
-                  </td>
-                  <td class="py-3 px-6 text-center text-gray-400">
-                    {feat.enterprise === '---' ? (
-                      <svg class="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                    ) : feat.enterprise === 'Included' ? (
-                      <svg class="w-4 h-4 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-                    ) : feat.enterprise}
+                  <td class="py-3 px-6 text-gray-400">
+                    {feat.value === 'Included' ? (
+                      <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+                    ) : feat.value}
                   </td>
                 </tr>
               ))}
@@ -120,10 +115,10 @@ const faqs = [
               <input type="checkbox" id={`faq-${i}`} class="peer hidden" />
               <label
                 for={`faq-${i}`}
-                class="flex items-center justify-between w-full py-4 px-6 cursor-pointer hover:bg-dark-50 transition-colors"
+                class="flex items-center justify-between w-full py-4 px-6 cursor-pointer hover:bg-dark-50 transition-colors group"
               >
                 <span class="text-gray-200 font-medium text-sm sm:text-base">{faq.question}</span>
-                <svg class="w-5 h-5 text-primary shrink-0 ml-4 transition-transform peer-checked:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+                <svg class="faq-chevron w-5 h-5 text-primary shrink-0 ml-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
               </label>
               <div class="max-h-0 overflow-hidden peer-checked:max-h-96 transition-all duration-300">
                 <p class="px-6 pb-4 text-gray-400 text-sm leading-relaxed">{faq.answer}</p>
@@ -143,20 +138,12 @@ const faqs = [
         <p class="text-gray-400 mb-8 max-w-xl mx-auto">
           Get ClawHalla running in under 5 minutes. One command, full autonomy.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/#quick-start"
-            class="px-8 py-3 bg-primary text-dark font-semibold rounded-lg hover:bg-primary-300 transition-all hover:shadow-lg hover:shadow-primary/25"
-          >
-            Get Started Free
-          </a>
-          <a
-            href="mailto:contact@deegalabs.com"
-            class="px-8 py-3 border border-primary/40 text-primary rounded-lg hover:bg-primary/10 transition-all font-semibold"
-          >
-            Contact Sales
-          </a>
-        </div>
+        <a
+          href="/#quick-start"
+          class="inline-block px-8 py-3 bg-primary text-dark font-semibold rounded-lg hover:bg-primary-300 transition-all hover:shadow-lg hover:shadow-primary/25"
+        >
+          Get Started Free
+        </a>
       </div>
     </section>
 

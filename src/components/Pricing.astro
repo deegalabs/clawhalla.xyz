@@ -1,134 +1,51 @@
 ---
-const plans = [
-  {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    description: 'Perfect for exploring ClawHalla and getting started.',
-    cta: 'Get Started',
-    ctaLink: '#quick-start',
-    highlighted: false,
-    features: [
-      'Docker + Mission Control',
-      '3 agents (Claw, Thor, Bragi)',
-      'Basic task board',
-      'Agent chat (1:1)',
-      'Community support',
-      'MIT licensed',
-    ],
-    excluded: [
-      'Full agent roster (15)',
-      'Autopilot mode',
-      'Content pipeline',
-      'Secret vault',
-      'Priority support',
-    ],
-  },
-  {
-    name: 'Pro',
-    price: '$49',
-    period: '/mo',
-    description: 'Full power for developers and small teams.',
-    cta: 'Start Free Trial',
-    ctaLink: '#quick-start',
-    highlighted: true,
-    features: [
-      'Everything in Free',
-      'All 15 agents + 4 squads',
-      'Autopilot mode',
-      'Content pipeline',
-      'Secret vault (AES-256-GCM)',
-      'Premium squad packs',
-      'Marketplace access',
-      'Priority support',
-    ],
-    excluded: [
-      'Custom agents',
-      'SSO / SAML',
-      'SLA guarantee',
-    ],
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    description: 'For organizations needing custom solutions.',
-    cta: 'Contact Us',
-    ctaLink: 'mailto:contact@deegalabs.com',
-    highlighted: false,
-    features: [
-      'Everything in Pro',
-      'Custom agent development',
-      'SSO / SAML integration',
-      '99.9% SLA guarantee',
-      'Dedicated support engineer',
-      'On-premise deployment',
-      'Custom integrations',
-      'Training & onboarding',
-    ],
-    excluded: [],
-  },
+const included = [
+  'Docker setup — one command to deploy',
+  'Mission Control dashboard (18 screens)',
+  '4 starter agents (Claw, Odin, Frigg, Freya)',
+  'AI-AGIL methodology built in',
+  'Task board with sprints and epics',
+  'Agent chat (1:1 and group)',
+  'Web terminal access',
+  'Community support',
+  'MIT licensed — forever free',
 ];
 ---
 
 <section class="py-20 sm:py-28 px-4 bg-dark-50" id="pricing">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-3xl mx-auto">
     <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
-      <span class="text-primary">Simple</span> Pricing
+      <span class="text-primary">What's</span> Included
     </h2>
     <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
-      Start free, scale when you need to. Open source core always stays free.
+      Everything you need to run a multi-agent AI system. Open source, no paywalls.
     </p>
 
-    <div class="grid md:grid-cols-3 gap-6 items-start">
-      {plans.map((plan) => (
-        <div class={`rounded-2xl border p-6 sm:p-8 transition-all ${
-          plan.highlighted
-            ? 'border-primary/50 bg-dark shadow-xl shadow-primary/10 relative'
-            : 'border-dark-200 bg-dark'
-        }`}>
-          {plan.highlighted && (
-            <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-mono font-bold text-dark bg-primary px-4 py-1 rounded-full">
-              MOST POPULAR
-            </span>
-          )}
+    <div class="rounded-2xl border border-dark-200 bg-dark p-6 sm:p-8">
+      <div class="flex items-baseline gap-2 mb-6">
+        <span class="text-4xl font-bold text-primary">Free</span>
+        <span class="text-gray-400 text-sm">& open source</span>
+      </div>
 
-          <div class="mb-6">
-            <h3 class="font-heading text-xl font-bold text-gray-100 mb-2">{plan.name}</h3>
-            <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-bold text-primary">{plan.price}</span>
-              {plan.period && <span class="text-gray-400 text-sm">{plan.period}</span>}
-            </div>
-            <p class="text-gray-400 text-sm mt-2">{plan.description}</p>
-          </div>
+      <ul class="space-y-3 mb-8">
+        {included.map((feature) => (
+          <li class="flex items-start gap-2 text-sm">
+            <svg class="w-4 h-4 text-green-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+            <span class="text-gray-300">{feature}</span>
+          </li>
+        ))}
+      </ul>
 
-          <a
-            href={plan.ctaLink}
-            class={`block text-center py-3 rounded-lg font-semibold transition-all mb-8 ${
-              plan.highlighted
-                ? 'bg-primary text-dark hover:bg-primary-300 hover:shadow-lg hover:shadow-primary/25'
-                : 'border border-primary/40 text-primary hover:bg-primary/10'
-            }`}
-          >
-            {plan.cta}
-          </a>
+      <a
+        href="#quick-start"
+        class="block text-center py-3 rounded-lg font-semibold transition-all bg-primary text-dark hover:bg-primary-300 hover:shadow-lg hover:shadow-primary/25 mb-4"
+      >
+        Get Started
+      </a>
 
-          <ul class="space-y-3">
-            {plan.features.map((feature) => (
-              <li class="flex items-start gap-2 text-sm">
-                <svg class="w-4 h-4 text-green-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-                <span class="text-gray-300">{feature}</span>
-              </li>
-            ))}
-            {plan.excluded.map((feature) => (
-              <li class="flex items-start gap-2 text-sm">
-                <svg class="w-4 h-4 text-gray-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                <span class="text-gray-500">{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <p class="text-center text-xs text-gray-500">
+        More agents and features coming soon.
+      </p>
     </div>
   </div>
 </section>
