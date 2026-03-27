@@ -1,48 +1,127 @@
 ---
 title: "Installation"
-description: "Complete guide to installing ClawHalla on your system, from one-liner to manual setup."
+description: "Install ClawHalla on your machine — Docker container or directly on a VPS/server."
 ---
 
 import { Tabs, TabItem, Aside, Steps } from '@astrojs/starlight/components';
 
 ## Prerequisites
 
-Before installing ClawHalla, make sure your system meets these requirements:
-
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| **Docker** | v20.10+ | Latest stable |
-| **Docker Compose** | v2.0+ (plugin) | Latest stable |
-| **RAM** | 4 GB | 8 GB+ |
-| **Disk** | 10 GB free | 20 GB+ |
-| **OS** | Linux, macOS, WSL2 | Ubuntu 24.04 |
-| **Internet** | Required for setup | Required for API calls |
-
-You will also need an **Anthropic API key** or a **Claude Max subscription** for model access.
-See the [Claude Max setup guide](/getting-started/claude-max/) for OAuth-based authentication.
+| Requirement | Minimum | Notes |
+|-------------|---------|-------|
+| **OS** | Ubuntu 22.04+ / macOS 13+ | Debian also supported |
+| **RAM** | 2 GB | 4 GB+ recommended |
+| **Disk** | 5 GB free | |
+| **API access** | Anthropic API key **or** Claude Max subscription | |
 
 ---
 
 ## Quick Install (One-liner)
 
-The fastest way to get ClawHalla running:
+The installer detects your environment and asks which mode you want:
 
 ```bash
 curl -fsSL https://clawhalla.xyz/install.sh | bash
 ```
 
-This script will:
-1. Clone the repository
-2. Create a `.env` file from the template
-3. Prompt you for your Anthropic API key
-4. Build and start the Docker containers
-5. Print next-step instructions
+To skip the mode prompt, pass a flag directly:
+
+```bash
+# Force bare metal (VPS, hackathons, no Docker required)
+curl -fsSL https://clawhalla.xyz/install.sh | bash -s -- --bare
+
+# Force Docker (isolated container)
+curl -fsSL https://clawhalla.xyz/install.sh | bash -s -- --docker
+```
+
+The installer will:
+1. Detect your OS
+2. Ask which install mode you want (Docker or bare metal)
+3. Ask for your model preference and API key
+4. Configure OpenClaw automatically — **no interactive `openclaw onboard` needed**
+5. Copy 15 pre-trained agents to your workspace
+6. Start the gateway and Mission Control
+7. Print access URLs
+
+---
+
+## Install Modes
+
+<Tabs>
+<TabItem label="Bare Metal (VPS / Hackathon)">
+
+Best for: **VPS, cloud servers, hackathons, machines without Docker**.
+
+The installer:
+- Installs Node 24 via nvm (if not present)
+- Installs pnpm + OpenClaw CLI globally
+- Writes `~/.openclaw/openclaw.json` with your credentials (no interactive wizard)
+- Copies the workspace template with 15 pre-trained agents
+- Installs and starts Mission Control on port 3000
+- Starts the gateway on port 18789
+
+**Access after install:**
+
+```
+Mission Control → http://your-ip:3000
+Gateway         → ws://127.0.0.1:18789 (loopback only)
+```
+
+**Manage services:**
+
+```bash
+# Restart gateway
+nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+
+# Start Mission Control (dev)
+cd ~/clawhalla/apps/mission-control && pnpm dev
+
+# View logs
+tail -f /tmp/openclaw-gateway.log
+tail -f /tmp/mission-control.log
+```
+
+<Aside type="tip">
+  On a fresh VPS, bare metal is faster than Docker: no image build, no group permission issues, up in ~3 minutes.
+</Aside>
+
+</TabItem>
+<TabItem label="Docker (Recommended for Production)">
+
+Best for: **local machines, production servers, isolated environments**.
+
+Requires Docker 20.10+ and Docker Compose v2. The installer will offer to install Docker automatically on Ubuntu/Debian if it is not present.
+
+**Access after install:**
+
+```
+Mission Control → http://localhost:3333
+Gateway         → ws://localhost:18789 (forwarded from container)
+```
+
+**Manage services:**
+
+```bash
+cd ~/clawhalla
+
+docker compose logs -f         # Stream logs
+docker compose stop            # Stop all services
+docker compose start           # Start all services
+docker compose exec clawhalla bash  # Enter container shell
+```
+
+<Aside type="note">
+  The Docker install configures OpenClaw automatically — you do not need to run `openclaw onboard` manually.
+</Aside>
+
+</TabItem>
+</Tabs>
 
 ---
 
 ## Manual Installation
 
-For full control over the setup process, install step by step.
+If you prefer full control, follow these steps.
 
 <Steps>
 
@@ -53,187 +132,159 @@ For full control over the setup process, install step by step.
    cd clawhalla
    ```
 
-2. **Create your environment file**
+2. **Generate a gateway token**
 
    ```bash
-   cp .env.example .env
+   GATEWAY_TOKEN=$(openssl rand -hex 32)
+   echo $GATEWAY_TOKEN  # save this
    ```
 
-   Edit `.env` and set your API key and gateway token:
+3. **Configure OpenClaw**
 
-   ```bash title=".env"
-   ANTHROPIC_API_KEY=sk-ant-...
-   OPENCLAW_GATEWAY_TOKEN=your-secure-token-here
-   CLAWDBOT_PASSWORD=your-password
+   Create `~/.openclaw/openclaw.json`:
+
+   ```json
+   {
+     "auth": {
+       "profiles": {
+         "anthropic:manual": { "provider": "anthropic", "mode": "api_key" }
+       }
+     },
+     "gateway": {
+       "port": 18789, "mode": "local", "bind": "loopback",
+       "auth": { "mode": "token", "token": "YOUR_GATEWAY_TOKEN" }
+     }
+   }
    ```
 
-   See the [Environment Variables reference](/reference/environment/) for all available options.
+   Create `~/.openclaw/agents/main/agent/auth-profiles.json`:
 
-3. **Build and start the containers**
+   ```json
+   {
+     "version": 1,
+     "profiles": {
+       "anthropic:manual": {
+         "type": "api_key",
+         "provider": "anthropic",
+         "key": "sk-ant-..."
+       }
+     },
+     "lastGood": { "anthropic": "anthropic:manual" }
+   }
+   ```
+
+4. **Copy the workspace template**
 
    ```bash
-   bash scripts/start.sh
+   cp -r workspace-template/. ~/.openclaw/workspace/
    ```
 
-   This builds the Docker image (Ubuntu 24.04 with Node 24, pnpm, zsh, and OpenClaw CLI pre-installed) and starts the services.
-
-4. **Enter the container**
+5. **Set up Mission Control**
 
    ```bash
-   docker compose exec clawhalla zsh
+   cd apps/mission-control
+   pnpm install
+   mkdir -p data
+   pnpm drizzle-kit generate
+   pnpm drizzle-kit migrate
+
+   cat > .env.local << EOF
+   GATEWAY_URL=http://127.0.0.1:18789
+   GATEWAY_TOKEN=YOUR_GATEWAY_TOKEN
+   DB_PATH=./data/mission-control.db
+   EOF
    ```
 
-   You will land in the ClawHalla container as the `clawdbot` user with a pre-configured zsh shell (oh-my-zsh + spaceship theme).
-
-5. **Run the onboarding wizard**
+6. **Start the gateway**
 
    ```bash
-   openclaw onboard
+   nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
+   sleep 5
+   curl -s http://127.0.0.1:18789/health   # should return {"ok":true}
    ```
 
-   The wizard walks you through:
-   - Model provider configuration
-   - Agent identity setup
-   - Workspace initialization
-   - Channel setup (Telegram, Discord, etc.)
-
-6. **Access Mission Control**
-
-   Open your browser and navigate to:
-
-   ```
-   http://localhost:3000
-   ```
-
-   Mission Control is the ClawHalla management dashboard where you can manage tasks, agents, approvals, memory, and more.
-
-7. **Verify your installation**
+7. **Start Mission Control**
 
    ```bash
-   openclaw models status
+   pnpm dev --hostname 0.0.0.0 --port 3000
    ```
 
-   You should see your configured models listed with their status. If the gateway is running correctly, all models will show as available.
+   Open `http://localhost:3000` in your browser.
 
 </Steps>
 
 ---
 
-## Post-Installation
-
-Once installed, start the gateway if it is not already running:
-
-```bash
-nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
-```
-
-Wait about 15 seconds, then verify:
-
-```bash
-curl -I http://localhost:18789
-```
-
-You should receive an HTTP response indicating the gateway is active.
-
-### Useful Aliases
-
-The container comes with pre-configured aliases:
-
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `oc` | `openclaw` | Short for OpenClaw CLI |
-| `mc` | `cd ~/mission-control && pnpm dev` | Start Mission Control |
-| `gw` | `openclaw gateway` | Gateway commands |
-| `agents` | `openclaw agent list` | List agents |
-| `crons` | `openclaw cron list` | List cron jobs |
-| `logs` | `tail -f /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log` | Follow today's logs |
-
----
-
 ## Troubleshooting
 
-### Container fails to start
+### Gateway shows as offline in Mission Control
 
-```bash
-docker compose logs clawhalla
-```
+The most common cause: `GATEWAY_TOKEN` in `.env.local` is empty or wrong.
 
-Common causes:
-- **Port conflict:** Ports 18789 or 3000 are already in use. Change them in `docker-compose.yml`.
-- **Missing `.env` file:** Make sure you copied `.env.example` to `.env`.
-- **Docker not running:** Verify with `docker info`.
+Check `apps/mission-control/.env.local` and verify the token matches `~/.openclaw/openclaw.json → gateway.auth.token`.
+
+Restart Mission Control after editing `.env.local`.
 
 ### "openclaw: command not found"
 
-This means the CLI is not in the PATH. Inside the container, run:
+Source your shell profile and try again:
 
 ```bash
-source ~/.nvm/nvm.sh
-pnpm add -g openclaw
+source ~/.bashrc    # or ~/.zshrc
+```
+
+If using nvm, make sure Node is active:
+
+```bash
+nvm use 24
 ```
 
 ### Gateway does not start
 
-Check if another process is using port 18789:
+Check if port 18789 is already in use:
 
 ```bash
 lsof -i :18789
 ```
 
-Kill any existing gateway process and restart:
+Kill the existing process and restart:
 
 ```bash
 kill $(ps aux | grep openclaw-gateway | grep -v grep | awk '{print $2}')
 nohup openclaw gateway > /tmp/openclaw-gateway.log 2>&1 &
 ```
 
-### Models show as unavailable
+### Mission Control blank page or DB error
 
-Verify your API key is set:
+The `data/` directory is missing or the migration was not run:
 
 ```bash
-echo $ANTHROPIC_API_KEY
+cd ~/clawhalla/apps/mission-control
+mkdir -p data
+pnpm drizzle-kit migrate
 ```
 
-If using Claude Max OAuth, follow the [Claude Max setup guide](/getting-started/claude-max/).
+### Docker: container fails to start
 
-Check the gateway logs for authentication errors:
+```bash
+docker compose logs clawhalla
+```
+
+Common causes: port conflict (18789 or 3000 already in use), missing `.env` file, Docker daemon not running.
+
+### Models show as unavailable
+
+Verify your credentials file:
+
+```bash
+cat ~/.openclaw/agents/main/agent/auth-profiles.json
+```
+
+For API key, the `key` field must be your Anthropic API key.
+For Claude Max, the `token` field must be your OAuth token.
+
+Check gateway logs for auth errors:
 
 ```bash
 tail -50 /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
 ```
-
-### Mission Control returns a blank page
-
-Make sure the MC container is running:
-
-```bash
-docker compose ps
-```
-
-If running the built-in MC (inside the main container), start it manually:
-
-```bash
-cd ~/mission-control && pnpm dev
-```
-
-### Permission errors on volumes
-
-The entrypoint script fixes permissions automatically, but if you see errors:
-
-```bash
-sudo chown -R clawdbot:clawdbot ~/.openclaw
-```
-
-### Resetting everything
-
-To start fresh without losing your API keys:
-
-```bash
-bash scripts/reset.sh
-bash scripts/start.sh
-```
-
-<Aside type="caution">
-  `reset.sh` will delete workspace data, sessions, and cron jobs. Back up anything important first.
-</Aside>
