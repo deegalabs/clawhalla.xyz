@@ -1,8 +1,24 @@
 ---
 title: Reference
-description: Reference docs for scripts, Docker, and environment variables.
+description: Technical reference for the ClawHalla platform.
 ---
 
-- [Scripts](/docs/reference/scripts/)
-- [Docker](/docs/reference/docker/)
-- [Environment Variables](/docs/reference/environment/)
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="API Reference" icon="open-book">
+    [Mission Control REST API — all 40+ endpoints documented with examples.](/reference/api/)
+  </Card>
+  <Card title="Architecture" icon="information">
+    [System diagram, gateway protocol, agent hierarchy, and data model.](/reference/architecture/)
+  </Card>
+  <Card title="Docker" icon="setting">
+    [Dockerfile layers, compose volumes, port mapping, and health checks.](/reference/docker/)
+  </Card>
+  <Card title="Environment Variables" icon="document">
+    [All environment variables with descriptions and defaults.](/reference/environment/)
+  </Card>
+  <Card title="Managing Your Install" icon="rocket">
+    [How to update, restart, and manage your ClawHalla installation.](/reference/scripts/)
+  </Card>
+</CardGrid>

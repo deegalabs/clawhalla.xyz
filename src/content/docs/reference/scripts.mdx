@@ -1,16 +1,96 @@
 ---
-title: Scripts
-description: Reference for helper scripts.
+title: Managing Your Install
+description: How to update, restart, and manage your ClawHalla installation.
 ---
 
-## `scripts/start.sh`
+ClawHalla is managed differently depending on your install mode.
 
-Builds and starts ClawHalla.
+## Docker
 
-## `scripts/stop.sh`
+All commands run from your install directory (default `~/clawhalla`).
 
-Stops containers, preserves data.
+### Start / Stop / Restart
 
-## `scripts/reset.sh`
+```bash
+cd ~/clawhalla
 
-Stops containers, wipes data, and rebuilds from scratch.
+docker compose up -d        # start all services
+docker compose down         # stop all services (data preserved)
+docker compose restart      # restart all services
+```
+
+### View logs
+
+```bash
+docker compose logs -f                   # all services
+docker compose logs -f openclaw          # gateway only
+docker compose logs -f mission-control   # MC only
+```
+
+### Update to latest version
+
+Re-run the installer — it detects the existing install and offers an **Update** option:
+
+```bash
+curl -fsSL https://clawhalla.xyz/install.sh | bash
+```
+
+Select **1 — Update** to pull the latest code and restart services. All data is preserved.
+
+### Reset (fresh start)
+
+Select **2 — Reinstall** from the installer menu. Your data directory is preserved and restored after the fresh clone.
+
+---
+
+## Bare Metal (PM2)
+
+Services are managed by PM2, named after your workspace.
+
+### List running processes
+
+```bash
+pm2 list
+```
+
+### Start / Stop / Restart
+
+```bash
+pm2 restart <workspace>-gateway
+pm2 restart <workspace>-mc
+pm2 stop <workspace>-gateway
+```
+
+### View logs
+
+```bash
+pm2 logs <workspace>-gateway
+pm2 logs <workspace>-mc
+```
+
+### Update
+
+Same as Docker — re-run the installer and select **Update**.
+
+### Auto-start on boot
+
+PM2 startup is configured automatically by the installer. To reconfigure manually:
+
+```bash
+pm2 startup   # prints a command to run with sudo
+pm2 save      # saves current process list
+```
+
+---
+
+## Multiple Instances
+
+You can run multiple ClawHalla instances on the same machine (e.g. different workspaces for different users). Each instance uses a different install directory and ports — the installer auto-detects available ports.
+
+```bash
+# Instance 1 — already running on :18789 / :3000
+~/daniel/
+
+# Instance 2 — installer detects ports in use, suggests next free
+~/spouse/        # gateway :18790, MC :3001
+```

@@ -20,7 +20,7 @@ export default defineConfig({
         {
           label: 'Getting Started',
           items: [
-            { label: 'Introduction', link: '/' },
+            { label: 'Introduction', link: '/getting-started/' },
             { label: 'Installation', link: '/getting-started/installation/' },
             { label: 'Configuration', link: '/getting-started/configuration/' },
             { label: 'Claude Max Setup', link: '/getting-started/claude-max/' },
@@ -43,7 +43,7 @@ export default defineConfig({
             { label: 'Architecture', link: '/reference/architecture/' },
             { label: 'Docker', link: '/reference/docker/' },
             { label: 'Environment Variables', link: '/reference/environment/' },
-            { label: 'Scripts', link: '/reference/scripts/' },
+            { label: 'Managing Your Install', link: '/reference/scripts/' },
           ],
         },
         {

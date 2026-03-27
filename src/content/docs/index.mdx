@@ -5,18 +5,13 @@ description: Your AI agent's hall of glory. Running in one command.
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-ClawHalla is a Docker-based launcher for [OpenClaw](https://openclaw.ai) that removes all setup friction. Get your AI agent running in under 5 minutes.
+ClawHalla is an opinionated distribution of [OpenClaw](https://openclaw.ai) that removes all setup friction. One command gets you a running AI agent system with Mission Control, pre-trained agents, and a management dashboard.
 
 ## Why ClawHalla?
 
-OpenClaw is a powerful AI agent framework, but setting it up requires:
+OpenClaw is a powerful AI agent framework, but setting it up requires navigating auth profiles, model configuration, and multiple CLI commands. ClawHalla wraps all of this in a guided installer with a web dashboard.
 
-- Node.js installation
-- pnpm configuration
-- Multiple CLI commands
-- Understanding the ecosystem
-
-ClawHalla wraps all of this in a pre-configured Docker container with helper scripts.
+**One command. Everything configured. Agents ready.**
 
 ## Quick Start
 
@@ -24,31 +19,26 @@ ClawHalla wraps all of this in a pre-configured Docker container with helper scr
 curl -fsSL https://clawhalla.xyz/install.sh | bash
 ```
 
-Or manually:
+The installer will ask for:
+- A workspace name
+- Install mode (Docker or bare metal)
+- Which services to include (Mission Control, Ollama)
 
-```bash
-git clone https://github.com/deegalabs/clawhalla.git
-cd clawhalla
-cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
-bash scripts/start.sh
-docker compose exec clawhalla bash
-openclaw onboard
-```
+Then open Mission Control at `http://localhost:3000` to connect your AI provider and start using agents.
 
 ## Next Steps
 
 <CardGrid>
   <Card title="Installation" icon="rocket">
-    [Detailed installation guide](/getting-started/installation/)
+    [Full installation guide with Docker and bare metal options](/getting-started/installation/)
   </Card>
   <Card title="Configuration" icon="setting">
-    [Configure your environment](/getting-started/configuration/)
+    [Configure providers, models, and channels](/getting-started/configuration/)
   </Card>
-  <Card title="First Agent" icon="pencil">
-    [Create your first agent](/guides/first-agent/)
+  <Card title="Your First Agent" icon="pencil">
+    [Create and customize your first agent](/guides/first-agent/)
   </Card>
-  <Card title="Reference" icon="open-book">
-    [Scripts and Docker reference](/reference/scripts/)
+  <Card title="Architecture" icon="open-book">
+    [How ClawHalla and OpenClaw work together](/reference/architecture/)
   </Card>
 </CardGrid>

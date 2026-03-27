@@ -3,5 +3,19 @@ title: Guides
 description: Practical guides for common ClawHalla workflows.
 ---
 
-- [Your First Agent](/docs/guides/first-agent/)
-- [Customization](/docs/guides/customization/)
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Your First Agent" icon="pencil">
+    [Create a custom agent, configure its persona, and register it in your workspace.](/guides/first-agent/)
+  </Card>
+  <Card title="Customization" icon="setting">
+    [Customize agent personas, squad packs, skills, boards, and Mission Control themes.](/guides/customization/)
+  </Card>
+  <Card title="Content Pipeline" icon="document">
+    [Set up a multi-agent content workflow from research to publishing.](/guides/content-pipeline/)
+  </Card>
+  <Card title="Autopilot" icon="rocket">
+    [Run autonomous goal-driven execution with heartbeats and feedback loops.](/guides/autopilot/)
+  </Card>
+</CardGrid>
