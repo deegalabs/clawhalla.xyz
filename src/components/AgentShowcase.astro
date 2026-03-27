@@ -1,122 +1,256 @@
 ---
-const tiers = {
-  T0: { label: 'Platform', color: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/5' },
-  T1: { label: 'Executive', color: 'text-primary', border: 'border-primary/30', bg: 'bg-primary/5' },
-  T2: { label: 'Management', color: 'text-blue-400', border: 'border-blue-400/30', bg: 'bg-blue-400/5' },
-  T3: { label: 'Execution', color: 'text-green-400', border: 'border-green-400/30', bg: 'bg-green-400/5' },
-};
-
-const agents = [
-  { id: 'main', name: 'Claw', emoji: '\u{1F99E}', role: 'Platform Chief', tier: 'T0' as const },
-  { id: 'odin', name: 'Odin', emoji: '\u{1F441}', role: 'Strategic Overseer', tier: 'T1' as const },
-  { id: 'vidar', name: 'Vidar', emoji: '\u2694\uFE0F', role: 'Dev Lead', tier: 'T1' as const },
-  { id: 'saga', name: 'Saga', emoji: '\u{1F52E}', role: 'Content Director', tier: 'T1' as const },
-  { id: 'thor', name: 'Thor', emoji: '\u26A1', role: 'Backend Engineer', tier: 'T2' as const },
-  { id: 'frigg', name: 'Frigg', emoji: '\u{1F451}', role: 'Frontend Engineer', tier: 'T2' as const },
-  { id: 'tyr', name: 'Tyr', emoji: '\u2696\uFE0F', role: 'QA Lead', tier: 'T2' as const },
-  { id: 'freya', name: 'Freya', emoji: '\u2728', role: 'UX Designer', tier: 'T2' as const },
-  { id: 'heimdall', name: 'Heimdall', emoji: '\u{1F441}\u200D\u{1F5E8}', role: 'Security & DevOps', tier: 'T2' as const },
-  { id: 'volund', name: 'Volund', emoji: '\u{1F527}', role: 'Smart Contract Dev', tier: 'T3' as const },
-  { id: 'sindri', name: 'Sindri', emoji: '\u{1F525}', role: 'Blockchain Auditor', tier: 'T3' as const },
-  { id: 'skadi', name: 'Skadi', emoji: '\u2744\uFE0F', role: 'Data Analyst', tier: 'T3' as const },
-  { id: 'mimir', name: 'Mimir', emoji: '\u{1F9E0}', role: 'Research Agent', tier: 'T3' as const },
-  { id: 'bragi', name: 'Bragi', emoji: '\u{1F3AD}', role: 'Content Writer', tier: 'T3' as const },
-  { id: 'loki', name: 'Loki', emoji: '\u{1F98A}', role: 'Automation & Scripts', tier: 'T3' as const },
+const squads = [
+  {
+    id: 'personal',
+    name: 'Personal',
+    emoji: '🧘',
+    tagline: 'Your AI life assistant — research, schedule, remember.',
+    tier: 'free' as const,
+    color: 'green',
+    accentHex: '#4ade80',
+    agents: [
+      { name: 'Claw', role: 'Chief Orchestrator', emoji: '🦞', model: 'Opus 4.6' },
+      { name: 'Frigg', role: 'Personal Assistant', emoji: '👑', model: 'Sonnet 4.6' },
+      { name: 'Mimir', role: 'Research Agent', emoji: '🧠', model: 'Sonnet 4.6' },
+    ],
+    useCases: ['Scheduling & reminders', 'Research & summarization', 'Email drafts', 'Personal tasks'],
+  },
+  {
+    id: 'hackathon',
+    name: 'Hackathon',
+    emoji: '⚡',
+    tagline: 'Ship fast. Build, test, and deploy in hours.',
+    tier: 'free' as const,
+    color: 'yellow',
+    accentHex: '#facc15',
+    agents: [
+      { name: 'Claw', role: 'Chief Orchestrator', emoji: '🦞', model: 'Opus 4.6' },
+      { name: 'Thor', role: 'Full-Stack Builder', emoji: '⚡', model: 'Sonnet 4.6' },
+      { name: 'Tyr', role: 'QA & Testing', emoji: '⚖️', model: 'Haiku 4.5' },
+    ],
+    useCases: ['Rapid prototyping', 'Code generation', 'Bug finding', 'Demo prep'],
+  },
+  {
+    id: 'social',
+    name: 'Social',
+    emoji: '📣',
+    tagline: 'Research, write, and schedule content across platforms.',
+    tier: 'free' as const,
+    color: 'blue',
+    accentHex: '#60a5fa',
+    agents: [
+      { name: 'Claw', role: 'Chief Orchestrator', emoji: '🦞', model: 'Opus 4.6' },
+      { name: 'Bragi', role: 'Content Writer', emoji: '🎭', model: 'Sonnet 4.6' },
+      { name: 'Saga', role: 'Scheduler & Analytics', emoji: '🔮', model: 'Haiku 4.5' },
+    ],
+    useCases: ['Social posts', 'Thread writing', 'Content calendar', 'Trend research'],
+  },
+  {
+    id: 'dev',
+    name: 'Dev',
+    emoji: '🛠️',
+    tagline: 'Full software dev cycle — plan, build, review, ship.',
+    tier: 'pro' as const,
+    color: 'primary',
+    accentHex: '#C8933A',
+    agents: [
+      { name: 'Vidar', role: 'Dev Lead', emoji: '⚔️', model: 'Opus 4.6' },
+      { name: 'Thor', role: 'Backend Engineer', emoji: '⚡', model: 'Sonnet 4.6' },
+      { name: 'Freya', role: 'Frontend Engineer', emoji: '✨', model: 'Sonnet 4.6' },
+      { name: 'Tyr', role: 'QA Engineer', emoji: '⚖️', model: 'Haiku 4.5' },
+    ],
+    useCases: ['Feature development', 'Code review', 'Test coverage', 'CI/CD automation'],
+  },
+  {
+    id: 'support',
+    name: 'Support',
+    emoji: '🎧',
+    tagline: 'Triage, respond, and escalate customer issues automatically.',
+    tier: 'pro' as const,
+    color: 'purple',
+    accentHex: '#c084fc',
+    agents: [
+      { name: 'Claw', role: 'Chief Orchestrator', emoji: '🦞', model: 'Opus 4.6' },
+      { name: 'Heimdall', role: 'Triage & Routing', emoji: '👁️', model: 'Haiku 4.5' },
+      { name: 'Freya', role: 'Response Agent', emoji: '✨', model: 'Sonnet 4.6' },
+      { name: 'Odin', role: 'Escalation Handler', emoji: '👁', model: 'Sonnet 4.6' },
+    ],
+    useCases: ['Ticket triage', 'Auto-responses', 'Escalation logic', 'Knowledge base'],
+  },
 ];
 ---
 
-<section class="py-20 sm:py-28 px-4 bg-dark-50">
+<section class="py-20 sm:py-28 px-4 bg-dark-50" id="squads">
   <div class="max-w-6xl mx-auto">
-    <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
-      <span class="text-primary">Meet the</span> Team
-    </h2>
-    <p class="text-gray-400 text-center mb-6 max-w-2xl mx-auto">
-      Start with 4 agents, expand as needed. 15 agent templates available in a Norse mythology hierarchy.
-      Each one trained for their domain.
+    <div class="text-center mb-4">
+      <h2 class="font-heading text-3xl md:text-4xl font-bold">
+        <span class="text-primary">Squad</span> Templates
+      </h2>
+    </div>
+    <p class="text-gray-400 text-center mb-3 max-w-2xl mx-auto">
+      Purpose-built agent squads for real work. Pre-configured with the right personas,
+      skills, and models for each use case.
+    </p>
+    <p class="text-center text-sm text-gray-500 mb-12">
+      Free tier includes 3 squads &mdash; pick the one that fits your workflow.
     </p>
 
-    <!-- Tier legend -->
-    <div class="flex flex-wrap justify-center gap-4 mb-12">
-      {Object.entries(tiers).map(([key, tier]) => (
-        <span class={`text-xs font-mono px-3 py-1 rounded-full border ${tier.border} ${tier.color} ${tier.bg}`}>
-          {key}: {tier.label}
-        </span>
+    <!-- Squad Tabs -->
+    <div class="flex flex-wrap gap-2 justify-center mb-10" id="squad-tabs">
+      {squads.map((squad, i) => (
+        <button
+          class={`squad-tab px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${i === 0 ? 'tab-active' : 'tab-inactive'}`}
+          data-squad={squad.id}
+          data-color={squad.color}
+          data-accent={squad.accentHex}
+        >
+          <span class="mr-1.5">{squad.emoji}</span>{squad.name}
+          {squad.tier === 'pro' && (
+            <span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30">PRO</span>
+          )}
+          {squad.tier === 'free' && (
+            <span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-green-400/10 text-green-400 border border-green-400/25">FREE</span>
+          )}
+        </button>
       ))}
     </div>
 
-    <!-- Hierarchy: T0 -->
-    <div class="flex justify-center mb-3">
-      {agents.filter(a => a.tier === 'T0').map((agent) => {
-        const tier = tiers[agent.tier];
-        return (
-          <div class={`agent-card w-40 p-4 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/10`}>
-            <div class="text-4xl mb-2">{agent.emoji}</div>
-            <h3 class="font-heading text-lg font-bold text-gray-100">{agent.name}</h3>
-            <p class="text-xs text-gray-400 mt-1">{agent.role}</p>
-            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
+    <!-- Squad Panels -->
+    {squads.map((squad, i) => (
+      <div
+        class={`squad-panel${i === 0 ? '' : ' hidden'}`}
+        data-squad={squad.id}
+      >
+        <div
+          class="rounded-2xl border bg-dark overflow-hidden shadow-xl transition-all duration-300"
+          style={`border-color: ${squad.accentHex}33;`}
+        >
+          <div class="p-6 sm:p-8">
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+
+              <!-- Left: Squad info -->
+              <div>
+                <div class="flex items-start gap-3 mb-5">
+                  <span class="text-4xl shrink-0">{squad.emoji}</span>
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <h3 class="font-heading text-2xl font-bold text-gray-100">{squad.name} Squad</h3>
+                      {squad.tier === 'free' && (
+                        <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/30">FREE</span>
+                      )}
+                      {squad.tier === 'pro' && (
+                        <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">PRO</span>
+                      )}
+                    </div>
+                    <p class="text-gray-400 text-sm">{squad.tagline}</p>
+                  </div>
+                </div>
+
+                <!-- Use cases -->
+                <div class="mb-6">
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Good for</p>
+                  <div class="flex flex-wrap gap-2">
+                    {squad.useCases.map(uc => (
+                      <span class="text-xs px-3 py-1 rounded-full bg-dark-50 border border-dark-200 text-gray-400">{uc}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {squad.tier === 'pro' ? (
+                  <a href="#pricing" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-dark text-sm font-semibold hover:bg-[#CFA557] transition-colors">
+                    Unlock with Pro
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                ) : (
+                  <a href="#quick-start" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dark-200 text-gray-300 text-sm font-medium hover:border-primary/40 hover:text-primary transition-colors">
+                    Deploy this squad
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                )}
+              </div>
+
+              <!-- Right: Agent list -->
+              <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-4 font-medium">{squad.agents.length} agents in this squad</p>
+                <div class="space-y-3">
+                  {squad.agents.map(agent => (
+                    <div class="flex items-center gap-4 p-3 rounded-xl bg-dark-50 border border-dark-200 hover:border-gray-600 transition-colors">
+                      <div class="text-2xl shrink-0">{agent.emoji}</div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2">
+                          <span class="font-heading font-bold text-gray-100 text-sm">{agent.name}</span>
+                          <span class="text-gray-500 text-xs truncate">{agent.role}</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-gray-600">{agent.model}</span>
+                      </div>
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                        <span class="text-[10px] text-gray-500">ready</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <p class="text-xs text-gray-600 mt-4 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Personas are <code class="font-mono">.md</code> files &mdash; fully customizable, no lock-in.
+                </p>
+              </div>
+            </div>
           </div>
-        );
-      })}
-    </div>
+        </div>
+      </div>
+    ))}
 
-    <!-- Connector line T0 → T1 -->
-    <div class="flex justify-center mb-3">
-      <div class="w-px h-8 bg-gradient-to-b from-yellow-400/40 to-primary/40"></div>
-    </div>
-
-    <!-- T1 Row -->
-    <div class="flex justify-center gap-4 mb-3 flex-wrap">
-      {agents.filter(a => a.tier === 'T1').map((agent) => {
-        const tier = tiers[agent.tier];
-        return (
-          <div class={`agent-card w-36 sm:w-40 p-4 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/10`}>
-            <div class="text-3xl mb-2">{agent.emoji}</div>
-            <h3 class="font-heading text-base font-bold text-gray-100">{agent.name}</h3>
-            <p class="text-xs text-gray-400 mt-1">{agent.role}</p>
-            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
-          </div>
-        );
-      })}
-    </div>
-
-    <!-- Connector line T1 → T2 -->
-    <div class="flex justify-center mb-3">
-      <div class="w-px h-8 bg-gradient-to-b from-primary/40 to-blue-400/40"></div>
-    </div>
-
-    <!-- T2 Row -->
-    <div class="flex justify-center gap-3 mb-3 flex-wrap">
-      {agents.filter(a => a.tier === 'T2').map((agent) => {
-        const tier = tiers[agent.tier];
-        return (
-          <div class={`agent-card w-32 sm:w-36 p-3 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-400/10`}>
-            <div class="text-2xl mb-1">{agent.emoji}</div>
-            <h3 class="font-heading text-sm font-bold text-gray-100">{agent.name}</h3>
-            <p class="text-[11px] text-gray-400 mt-1">{agent.role}</p>
-            <span class={`inline-block text-[10px] font-mono mt-2 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
-          </div>
-        );
-      })}
-    </div>
-
-    <!-- Connector line T2 → T3 -->
-    <div class="flex justify-center mb-3">
-      <div class="w-px h-8 bg-gradient-to-b from-blue-400/40 to-green-400/40"></div>
-    </div>
-
-    <!-- T3 Row -->
-    <div class="flex justify-center gap-3 flex-wrap">
-      {agents.filter(a => a.tier === 'T3').map((agent) => {
-        const tier = tiers[agent.tier];
-        return (
-          <div class={`agent-card w-28 sm:w-32 p-3 rounded-xl border ${tier.border} ${tier.bg} bg-dark text-center transition-all hover:scale-105 hover:shadow-lg hover:shadow-green-400/10`}>
-            <div class="text-xl mb-1">{agent.emoji}</div>
-            <h3 class="font-heading text-sm font-bold text-gray-100">{agent.name}</h3>
-            <p class="text-[10px] text-gray-400 mt-1">{agent.role}</p>
-            <span class={`inline-block text-[10px] font-mono mt-1.5 px-2 py-0.5 rounded-full border ${tier.border} ${tier.color}`}>{agent.tier}</span>
-          </div>
-        );
-      })}
-    </div>
+    <p class="text-center text-sm text-gray-600 mt-8">
+      More squads on the roadmap &mdash; Blockchain, Content Pipeline, Business Ops, and more.
+      <a href="https://github.com/deegalabs/clawhalla" class="text-primary hover:underline ml-1" target="_blank" rel="noopener">Contribute on GitHub →</a>
+    </p>
   </div>
 </section>
+
+<style>
+  .tab-active {
+    background-color: rgba(200, 147, 58, 0.08);
+    border-color: rgba(200, 147, 58, 0.5);
+    color: #C8933A;
+  }
+  .tab-inactive {
+    background-color: #0d0d0d;
+    border-color: #2a2a2a;
+    color: #666;
+  }
+  .tab-inactive:hover {
+    border-color: #555;
+    color: #ccc;
+  }
+</style>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.squad-tab');
+  const panels = document.querySelectorAll<HTMLElement>('.squad-panel');
+
+  const colorMap: Record<string, string> = {
+    green:   'bg-green-400/10 border-green-400/50 text-green-400',
+    yellow:  'bg-yellow-400/10 border-yellow-400/50 text-yellow-400',
+    blue:    'bg-blue-400/10 border-blue-400/50 text-blue-400',
+    primary: 'bg-primary/10 border-primary/50 text-primary',
+    purple:  'bg-purple-400/10 border-purple-400/50 text-purple-400',
+  };
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.dataset.squad!;
+      const color = tab.dataset.color!;
+
+      tabs.forEach(t => {
+        t.className = 'squad-tab px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 tab-inactive';
+      });
+      tab.className = `squad-tab px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${colorMap[color]}`;
+
+      panels.forEach(panel => {
+        panel.classList.toggle('hidden', panel.dataset.squad !== targetId);
+      });
+    });
+  });
+</script>

@@ -1,51 +1,157 @@
 ---
-const included = [
-  'Docker or direct OS install — one command to deploy',
-  'Mission Control dashboard (18 screens)',
-  '4 starter agents (Claw, Odin, Frigg, Freya)',
-  'AI-AGIL methodology built in',
-  'Task board with sprints and epics',
-  'Agent chat (1:1 and group)',
-  'Web terminal access',
-  'Community support',
-  'MIT licensed — forever free',
+const tiers = [
+  {
+    name: 'Free',
+    subtitle: 'Self-hosted',
+    price: '$0',
+    period: 'forever',
+    description: 'Everything you need to run your first AI squad. Open source, no paywalls.',
+    cta: { label: 'Get Started', href: '#quick-start', style: 'secondary' },
+    badge: null,
+    features: [
+      { text: 'Docker or bare metal install', note: 'one command' },
+      { text: '1 squad of your choice', note: 'Personal, Hackathon, or Social' },
+      { text: 'Up to 3 agents per squad', note: null },
+      { text: 'Mission Control dashboard', note: null },
+      { text: 'Task board, agent chat, terminal', note: null },
+      { text: 'AES-256 secret vault', note: null },
+      { text: 'Claude Max or API key auth', note: null },
+      { text: 'MIT licensed', note: 'forever' },
+      { text: 'Community support', note: null },
+    ],
+    notIncluded: [
+      'Multiple squads',
+      'Pro squad templates (Dev, Support)',
+      'Squad Marketplace',
+    ],
+  },
+  {
+    name: 'Pro',
+    subtitle: 'Self-hosted',
+    price: 'Soon',
+    period: '',
+    description: 'Multiple squads, more agents, access to pro templates and the Squad Marketplace.',
+    cta: { label: 'Join Waitlist', href: 'https://github.com/deegalabs/clawhalla', style: 'primary' },
+    badge: 'Coming soon',
+    features: [
+      { text: 'Everything in Free', note: null },
+      { text: 'Up to 3 squads active', note: null },
+      { text: 'Up to 12 agents total', note: null },
+      { text: 'Pro squad templates', note: 'Dev, Support, and more' },
+      { text: 'Squad Marketplace access', note: 'community packs' },
+      { text: 'Priority support', note: null },
+      { text: 'Slack / Discord integration', note: null },
+    ],
+    notIncluded: [],
+  },
+  {
+    name: 'Cloud',
+    subtitle: 'Managed by Deega Labs',
+    price: 'Soon',
+    period: '',
+    description: 'Fully managed, auto-scaling, zero ops. Your squads run in the cloud — you just direct them.',
+    cta: { label: 'Join Waitlist', href: 'https://github.com/deegalabs/clawhalla', style: 'ghost' },
+    badge: 'Coming soon',
+    features: [
+      { text: 'Everything in Pro', note: null },
+      { text: 'Unlimited squads & agents', note: null },
+      { text: 'Managed hosting', note: 'no server needed' },
+      { text: 'Auto-scaling infrastructure', note: null },
+      { text: 'Uptime SLA', note: null },
+      { text: 'Dedicated support', note: null },
+      { text: 'Custom model endpoints', note: null },
+    ],
+    notIncluded: [],
+  },
 ];
 ---
 
-<section class="py-20 sm:py-28 px-4 bg-dark-50" id="pricing">
-  <div class="max-w-3xl mx-auto">
+<section class="py-20 sm:py-28 px-4 bg-dark" id="pricing">
+  <div class="max-w-6xl mx-auto">
     <h2 class="font-heading text-3xl md:text-4xl font-bold text-center mb-4">
-      <span class="text-primary">What's</span> Included
+      <span class="text-primary">Simple</span> Pricing
     </h2>
-    <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
-      Everything you need to run a multi-agent AI system. Open source, no paywalls.
+    <p class="text-gray-400 text-center mb-16 max-w-xl mx-auto">
+      Start free, self-hosted. Scale to Pro or Cloud when you need more.
     </p>
 
-    <div class="rounded-2xl border border-dark-200 bg-dark p-6 sm:p-8">
-      <div class="flex items-baseline gap-2 mb-6">
-        <span class="text-4xl font-bold text-primary">Free</span>
-        <span class="text-gray-400 text-sm">& open source</span>
-      </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      {tiers.map((tier, i) => (
+        <div class={`relative flex flex-col rounded-2xl border p-6 sm:p-7 transition-all duration-300 ${i === 0 ? 'border-primary/30 bg-dark-50 shadow-lg shadow-primary/5' : 'border-dark-200 bg-dark hover:border-dark-100'}`}>
 
-      <ul class="space-y-3 mb-8">
-        {included.map((feature) => (
-          <li class="flex items-start gap-2 text-sm">
-            <svg class="w-4 h-4 text-green-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-            <span class="text-gray-300">{feature}</span>
-          </li>
-        ))}
-      </ul>
+          {tier.badge && (
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span class="px-3 py-1 text-xs font-medium rounded-full bg-dark-50 border border-dark-200 text-gray-400">{tier.badge}</span>
+            </div>
+          )}
 
-      <a
-        href="#quick-start"
-        class="block text-center py-3 rounded-lg font-semibold transition-all bg-primary text-dark hover:bg-primary-300 hover:shadow-lg hover:shadow-primary/25 mb-4"
-      >
-        Get Started
-      </a>
+          <div class="mb-6">
+            <div class="flex items-baseline gap-2 mb-1">
+              <h3 class="font-heading text-xl font-bold text-gray-100">{tier.name}</h3>
+              <span class="text-xs text-gray-500">{tier.subtitle}</span>
+            </div>
+            <div class="flex items-baseline gap-1.5 mb-3">
+              <span class={`text-3xl font-bold ${tier.price === '$0' ? 'text-primary' : 'text-gray-400'}`}>{tier.price}</span>
+              {tier.period && <span class="text-gray-500 text-sm">{tier.period}</span>}
+            </div>
+            <p class="text-gray-500 text-sm leading-relaxed">{tier.description}</p>
+          </div>
 
-      <p class="text-center text-xs text-gray-500">
-        More agents and features coming soon.
-      </p>
+          <!-- Features -->
+          <ul class="space-y-2.5 mb-8 flex-1">
+            {tier.features.map(f => (
+              <li class="flex items-start gap-2 text-sm">
+                <svg class="w-4 h-4 text-green-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span>
+                  <span class="text-gray-300">{f.text}</span>
+                  {f.note && <span class="text-gray-600 text-xs ml-1.5">— {f.note}</span>}
+                </span>
+              </li>
+            ))}
+            {tier.notIncluded.map(f => (
+              <li class="flex items-start gap-2 text-sm">
+                <svg class="w-4 h-4 text-gray-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                <span class="text-gray-600">{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <!-- CTA -->
+          {tier.cta.style === 'primary' && (
+            <a
+              href={tier.cta.href}
+              target={tier.cta.href.startsWith('http') ? '_blank' : undefined}
+              rel={tier.cta.href.startsWith('http') ? 'noopener' : undefined}
+              class="block text-center py-3 rounded-xl font-semibold text-sm transition-all bg-primary text-dark hover:bg-[#CFA557] hover:shadow-lg hover:shadow-primary/20"
+            >
+              {tier.cta.label}
+            </a>
+          )}
+          {tier.cta.style === 'secondary' && (
+            <a
+              href={tier.cta.href}
+              class="block text-center py-3 rounded-xl font-semibold text-sm transition-all border border-primary/40 text-primary hover:bg-primary/10"
+            >
+              {tier.cta.label}
+            </a>
+          )}
+          {tier.cta.style === 'ghost' && (
+            <a
+              href={tier.cta.href}
+              target={tier.cta.href.startsWith('http') ? '_blank' : undefined}
+              rel={tier.cta.href.startsWith('http') ? 'noopener' : undefined}
+              class="block text-center py-3 rounded-xl font-semibold text-sm transition-all border border-dark-200 text-gray-400 hover:border-gray-500 hover:text-gray-300"
+            >
+              {tier.cta.label}
+            </a>
+          )}
+        </div>
+      ))}
     </div>
+
+    <p class="text-center text-xs text-gray-600 mt-10">
+      All self-hosted tiers are MIT licensed. Your data never leaves your machine.
+      <a href="https://github.com/deegalabs/clawhalla" class="text-primary hover:underline ml-1" target="_blank" rel="noopener">View the source →</a>
+    </p>
   </div>
 </section>
