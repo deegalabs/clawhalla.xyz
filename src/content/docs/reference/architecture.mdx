@@ -57,7 +57,8 @@ ClawHalla is a multi-layered system that connects AI agents to messaging surface
          │
 ┌────────▼───────────┐
 │    SQLite DB       │
-│  11 tables         │
+│  23 tables         │
+│  11 indexes        │
 │  (Drizzle ORM)     │
 └────────────────────┘
 ```
@@ -136,7 +137,7 @@ Executives make architectural decisions, manage squads, and escalate to the CEO 
 
 | Agent | Role | Model | Manages |
 |-------|------|-------|---------|
-| **Thor** | Tech Lead | Sonnet 4.5 | Freya, Heimdall, Volund |
+| **Thor** | Tech Lead | Sonnet 4.6 | Freya, Heimdall, Volund |
 | **Frigg** | Coordinator (PA) | Haiku 4.5 | Mimir, Bragi, Loki |
 | **Tyr** | Security Auditor | Opus 4.6 | -- |
 
@@ -146,14 +147,14 @@ Managers route tasks, review work, and handle day-to-day operations.
 
 | Agent | Role | Model | Squad |
 |-------|------|-------|-------|
-| **Freya** | Senior Dev | Sonnet 4.5 | Dev |
+| **Freya** | Senior Dev | Sonnet 4.6 | Dev |
 | **Heimdall** | QA Observer | Haiku 4.5 | Dev |
-| **Volund** | Dev/GitHub | Sonnet 4.5 | Dev |
-| **Sindri** | Solidity Dev | Sonnet 4.5 | Blockchain |
-| **Skadi** | Cairo Dev | Sonnet 4.5 | Blockchain |
-| **Mimir** | Knowledge Curator | Sonnet 4.5 | Clop Cabinet |
-| **Bragi** | Content Creator | Sonnet 4.5 | Clop Cabinet |
-| **Loki** | Monitor/Analyst | Sonnet 4.5 | Clop Cabinet |
+| **Volund** | Dev/GitHub | Sonnet 4.6 | Dev |
+| **Sindri** | Solidity Dev | Sonnet 4.6 | Blockchain |
+| **Skadi** | Cairo Dev | Sonnet 4.6 | Blockchain |
+| **Mimir** | Knowledge Curator | Sonnet 4.6 | Clop Cabinet |
+| **Bragi** | Content Creator | Sonnet 4.6 | Clop Cabinet |
+| **Loki** | Monitor/Analyst | Sonnet 4.6 | Clop Cabinet |
 
 Execution agents do the actual work: writing code, creating content, researching, monitoring.
 
@@ -180,7 +181,7 @@ Executive → CEO:         budget, strategy, external communication, deploy appr
 
 ## Data Model
 
-Mission Control uses **SQLite** with **Drizzle ORM**. The database contains 11 tables:
+Mission Control uses **SQLite** with **Drizzle ORM**. The database contains 23 tables with 11 indexes on the most queried columns:
 
 ### Core tables
 
@@ -355,6 +356,55 @@ CREATE TABLE workspace_files (
 );
 ```
 
+### Boards Engine (v1.0.1)
+
+**boards** -- Multi-board Kanban with customizable columns
+```sql
+CREATE TABLE boards (
+  id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT,
+  type TEXT NOT NULL DEFAULT 'kanban',  -- kanban | sprint | custom
+  columns TEXT NOT NULL,  -- JSON array of { id, name, color, wipLimit }
+  owner TEXT NOT NULL DEFAULT 'user', squad TEXT, settings TEXT,
+  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, archived_at INTEGER
+);
+```
+
+**cards** -- Board cards with full metadata
+```sql
+CREATE TABLE cards (
+  id TEXT PRIMARY KEY, board_id TEXT NOT NULL, title TEXT NOT NULL,
+  description TEXT, column TEXT NOT NULL, position INTEGER DEFAULT 0,
+  assignee TEXT, labels TEXT, priority TEXT DEFAULT 'medium',
+  due_date INTEGER, checklist TEXT, attachments TEXT, parent_card_id TEXT,
+  story_id TEXT, epic_id TEXT, sprint_id TEXT, progress INTEGER DEFAULT 0,
+  created_by TEXT DEFAULT 'user', created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL, completed_at INTEGER, archived_at INTEGER
+);
+-- Indexes: idx_cards_board, idx_cards_board_column, idx_cards_assignee
+```
+
+**card_comments** / **card_history** -- Comments and change tracking per card.
+
+### Chat Engine
+
+**chat_sessions** -- Persistent chat sessions with mode (single/party)
+**chat_messages** -- Messages with tool calls, thinking content, artifacts
+
+### Content & Notifications
+
+**content_drafts** -- Social media content (LinkedIn, Twitter, blog, etc.)
+**content_pipelines** -- Multi-step content generation workflows
+**notifications** -- System notifications with priority and read/dismissed state
+
+### Autopilot
+
+**autopilot_goals** -- Goal-driven autonomous execution targets
+**autopilot_runs** -- Run history with status and feedback
+
+### Settings
+
+**settings** -- Key-value system configuration
+
 ---
 
 ## Real-Time Pipeline
@@ -442,6 +492,16 @@ Full Docker sandboxing is also available per agent:
   }
 }
 ```
+
+### Mission Control Security (v1.0.1)
+
+- **CSP** -- Content-Security-Policy header on all responses (`unsafe-eval` only in dev)
+- **CORS** -- Middleware blocks unknown origins on `/api/*` routes
+- **Rate limiting** -- In-memory limiter: dispatch (3 concurrent/10 per min), chat (5/20), council (1/3)
+- **Auth** -- Per-process crypto session token on all destructive endpoints (DELETE, reset)
+- **XSS prevention** -- HTML escaping + URL sanitization (`javascript:`, `data:` blocked)
+- **Terminal** -- Regex-based command blocklist + cwd restricted to `$HOME` and `/tmp`
+- **IDs** -- `crypto.randomUUID()` for all generated identifiers (no collisions)
 
 ### Approval gates
 
