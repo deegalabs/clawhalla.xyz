@@ -1,0 +1,96 @@
+---
+title: Changelog
+description: Release history and version notes for ClawHalla.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+## v0.2.0 — Squad Core
+**Released: 2026-03-30**
+
+### Features
+
+- **Squad system** — Create agent teams from templates (Personal, Dev, Hackathon, Social) with one click. Each squad gets a dedicated board, persona files, and skills auto-copied to all agents.
+
+- **Content Pipeline** — Multi-platform content publishing with approval flow. Agents research topics, draft posts, and submit for human approval before publishing.
+
+- **Telegram integration** — Inline approval buttons, media upload, and webhook notifications. Approve or reject agent work directly from Telegram.
+
+- **Memory/RAG system** — Per-agent semantic search with configurable embedding providers (Ollama, OpenAI, Gemini, Voyage, Mistral). Choose RAG or file-based memory per agent via Settings.
+
+- **LinkedIn API** — Full publishing with image upload and article link support. Posts with text, images, and URL previews directly from Mission Control.
+
+- **Skills system** — Global skills (`mission-control.md`, `content-pipeline.md`) copied to every agent. Squad-specific skills (`social-publishing.md`) for specialized agents. Auto-copy on squad creation.
+
+- **Activities system** — Filtering by agent and action type, pagination with offset, DELETE endpoint for cleanup, auto-prune of entries older than 30 days (configurable).
+
+### Improvements
+
+- Chat session persistence — conversations auto-restore when navigating back to Chat
+- Memory page loading spinner while fetching data
+- Org structure rebuilt from all registered agents on squad create
+- Test suite expanded to 70 automated API tests covering all endpoints
+- Documentation updated across both repos (README, Architecture, API reference)
+
+### Fixes
+
+- Auth in test suite — gateway token restored after test runs
+- Agent ID parsing in memory/RAG CLI output
+- `memorySearch` config validation (must be object, not boolean)
+- Duplicate cards from repeated squad creation removed
+- Board cleanup for test data
+
+### Agent Hierarchy (9 agents)
+
+```
+Daniel (CEO, human)
+  └── Claw — Chief Orchestrator
+        ├── Dev Squad
+        │     ├── Thor — Tech Lead
+        │     ├── Freya — Senior Developer
+        │     └── Tyr — Security Auditor
+        ├── Personal Squad
+        │     ├── Frigg — Coordinator/PA
+        │     └── Mimir — Knowledge Curator
+        ├── Social Squad
+        │     ├── Saga — Content Strategist
+        │     └── Bragi — Content Creator
+        └── Vidar — Blockchain Architect
+```
+
+---
+
+## v0.1.2 — Docker + Setup
+**Released: 2026-03-20**
+
+### Features
+
+- Docker launcher with one-command installation
+- Mission Control dashboard (19 screens)
+- Boards Engine with Kanban, Sprint, and Content templates
+- Chat Engine with multi-agent party mode and streaming
+- Secret Vault with AES-256-GCM encryption
+- Full-text search via SQLite FTS5
+- Real-time updates via SSE + file watching
+- Onboarding wizard for first-time setup
+- Smart contracts on Base L2 (AgentRegistry, LicenseNFT, Marketplace)
+
+---
+
+## v0.1.1 — Foundation
+**Released: 2026-03-15**
+
+- Initial workspace template with AI-AGIL methodology
+- Agent persona system (IDENTITY.md, SOUL.md, AGENTS.md)
+- OpenClaw Gateway integration
+- Basic agent hierarchy
+
+---
+
+## v0.1.0 — Initial Release
+**Released: 2026-03-10**
+
+- Project scaffolding
+- Docker Compose configuration
+- Setup script (`install.sh`)
+- clawhalla.xyz landing page
