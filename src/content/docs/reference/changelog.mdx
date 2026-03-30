@@ -5,6 +5,34 @@ description: Release history and version notes for ClawHalla.
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+## v0.4.0 — Dashboard UI
+**Released: 2026-03-30**
+
+### Features
+
+- **Dashboard redesign** — Refactored into 4-row layout with dedicated widget components, section headers, and removed Quick Navigation grid.
+
+- **Cost Widget** — Per-agent cost breakdown with period selector (Today / 7 Days / 30 Days). CSS bar chart for historical data, input/output token counts, and USD cost.
+
+- **Agent Metrics** — Tasks completed, average response time, and color-coded success rate per agent. Period toggle for Today and This Week views.
+
+- **System Status** — Real-time overview showing gateway status, active sessions, agents online count, and Telegram connection status.
+
+- **Activity Feed** — Enhanced feed with agent and time range filters, action type icons, agent emoji avatars, and paginated "Load More". Heartbeat events hidden by default.
+
+- **Dynamic model selector** — Chat model picker now loads available models from `openclaw.json` providers instead of hardcoded Claude tiers. Supports any provider (Anthropic, OpenAI, xAI, Google, Mistral).
+
+- **Gateway session viewer** — New "Sessions" tab in Chat sidebar shows live gateway sessions (Telegram, webchat, cron). Click any session to view its conversation history.
+
+### API Endpoints
+
+- `GET /api/usage/history` — Aggregated cost data by day, week, or month per agent
+- `GET /api/agents/metrics` — Tasks completed, average duration, success rate per agent
+- `GET /api/models` — Available models from all configured providers
+- `GET /api/gateway/sessions?key=` — Single session detail with messages
+
+---
+
 ## v0.3.0 — AI-AGIL + Integrations
 **Released: 2026-03-30**
 
