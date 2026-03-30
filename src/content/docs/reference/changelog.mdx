@@ -5,6 +5,25 @@ description: Release history and version notes for ClawHalla.
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+## v0.3.0 — AI-AGIL + Integrations
+**Released: 2026-03-30**
+
+### Features
+
+- **Auto-publish on approval** — When a content draft is approved via Telegram or MC, it automatically publishes to LinkedIn. Configurable toggle in Settings > General.
+
+- **User Profile** — New Profile tab in Settings to populate USER.md (name, timezone, context). Syncs to all agent workspaces so every agent knows who they're helping.
+
+- **Board sync** — Content pipeline events automatically create and move cards on the Content Pipeline board. Draft created → card in Ideas. Approved → Review. Published → Published column.
+
+- **Channel viewer** — Office page now shows active channels per agent (Telegram, Gateway, Cron) with recency indicators. Collapsible sessions panel with token usage and costs.
+
+- **Model selector** — Chat UI model picker (Haiku/Sonnet/Opus) now actually controls which Claude model is used via `OPENCLAW_MODEL` environment variable.
+
+- **AI-AGIL methodology** — All 9 agents now have the AI-AGIL skill covering the 6 constitutional principles, task lifecycle, execution modes, wave orchestration, and board integration.
+
+---
+
 ## v0.2.0 — Squad Core
 **Released: 2026-03-30**
 
