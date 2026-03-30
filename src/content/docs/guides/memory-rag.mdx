@@ -1,0 +1,133 @@
+---
+title: Memory & RAG System
+description: Configure per-agent semantic search with local or cloud embeddings
+---
+
+import { Aside, Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+ClawHalla includes a built-in RAG (Retrieval-Augmented Generation) system that gives agents semantic search over their memory files. Each agent can be configured independently — full RAG with vector embeddings, or simple `.md` file-based memory.
+
+## How It Works
+
+Every agent in OpenClaw has a memory directory containing `.md` files (daily notes, curated knowledge, session logs). The RAG system indexes these files into a SQLite database with:
+
+- **FTS5 full-text search** — keyword matching with porter stemming
+- **Vector embeddings** — semantic similarity search using configurable embedding models
+- **Chunk-level indexing** — files are split into chunks for precise retrieval
+
+When an agent needs context, it queries the RAG index to find the most relevant memory chunks — not just keyword matches, but semantically similar content.
+
+## Embedding Providers
+
+ClawHalla supports multiple embedding providers. Choose based on your needs:
+
+| Provider | Model | Cost | Notes |
+|----------|-------|------|-------|
+| **Ollama** | nomic-embed-text | Free | Runs locally in Docker, recommended for ClawHalla |
+| **Node GGUF** | GGUF models | Free | Runs inside Node.js via node-llama-cpp |
+| **OpenAI** | text-embedding-3-small | Paid | Cloud API, requires API key |
+| **Google Gemini** | text-embedding-004 | Paid | Cloud API, requires API key |
+| **Voyage AI** | voyage-3-lite | Paid | Cloud API, requires API key |
+| **Mistral** | mistral-embed | Paid | Cloud API, requires API key |
+
+<Aside type="tip">
+If you're running ClawHalla with Docker (recommended), **Ollama** is the best choice — it runs locally with zero cost and the `nomic-embed-text` model is automatically pulled during setup.
+</Aside>
+
+## Configuration via Mission Control
+
+<Steps>
+
+1. **Open Settings** — Navigate to Settings > Memory tab in Mission Control
+
+2. **Choose a provider** — Select your embedding provider from the dropdown
+
+3. **Configure provider** — For Ollama, set the URL (default: `http://ollama:11434`). For cloud providers, enter your API key (stored encrypted in the Vault)
+
+4. **Enable** — Toggle memory search on
+
+5. **Set per-agent modes** — Choose which agents get RAG vs `.md`-only memory:
+   - **Default** — Inherits the global setting
+   - **RAG** — Full semantic search enabled
+   - **.md** — File-based memory only (no embeddings)
+
+6. **Save** — Configuration is saved to `openclaw.json` and indexing starts automatically
+
+</Steps>
+
+## Per-Agent Memory Modes
+
+Not every agent needs semantic search. A coordinator agent might work fine with simple `.md` files, while a knowledge curator benefits from RAG. You can configure this per-agent:
+
+```json
+// openclaw.json
+{
+  "agents": {
+    "defaults": {
+      "memorySearch": {
+        "provider": "ollama"
+      }
+    },
+    "list": [
+      {
+        "id": "mimir",
+        "memorySearch": {}  // inherits from defaults (RAG enabled)
+      },
+      {
+        "id": "freya",
+        "memorySearch": { "enabled": false }  // .md only
+      }
+    ]
+  }
+}
+```
+
+<Aside type="caution">
+The `memorySearch` field must be an object, not a boolean. Use `{ "enabled": false }` to disable RAG for a specific agent. Omit the field entirely to inherit from defaults.
+</Aside>
+
+## Semantic Search API
+
+Query agent memory programmatically:
+
+```bash
+# Search an agent's memory
+curl "http://localhost:3000/api/memory/rag?q=deployment+process&agent=thor&limit=5"
+
+# Response
+{
+  "ok": true,
+  "query": "deployment process",
+  "agent": "thor",
+  "results": [
+    {
+      "content": "...",
+      "score": 0.89,
+      "source": "memory/2026-03-28.md",
+      "chunk": 3
+    }
+  ],
+  "count": 1
+}
+```
+
+## Reindexing
+
+Memory is automatically indexed when files change. You can also trigger a manual reindex:
+
+```bash
+# Via API
+curl -X POST http://localhost:3000/api/memory/rag -d '{"force": true}'
+
+# Via CLI (inside container)
+openclaw memory index --force
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Memory search not configured" | Go to Settings > Memory and enable a provider |
+| No results returned | Check that memory files exist and run a reindex |
+| Ollama connection refused | Ensure the Ollama container is running: `docker compose ps ollama` |
+| Slow indexing | Large memory directories take time on first index — subsequent updates are incremental |

@@ -920,6 +920,85 @@ Get the curated long-term memory file (MEMORY.md).
 }
 ```
 
+### Memory Configuration
+
+```http
+GET /api/memory/config
+```
+
+Returns current memory/RAG configuration, per-agent status, and available embedding providers.
+
+**Response:**
+```json
+{
+  "ok": true,
+  "config": {
+    "provider": "ollama",
+    "enabled": true
+  },
+  "agents": [
+    {
+      "agentId": "main",
+      "provider": "ollama",
+      "indexed": 12,
+      "total": 15,
+      "chunks": 89,
+      "dirty": false,
+      "vectorReady": true,
+      "mode": "default"
+    }
+  ],
+  "providers": [...]
+}
+```
+
+```http
+POST /api/memory/config
+```
+
+Update memory/RAG provider configuration and per-agent modes.
+
+**Body:**
+```json
+{
+  "provider": "ollama",
+  "enabled": true,
+  "agentModes": {
+    "mimir": "rag",
+    "freya": "md",
+    "thor": "default"
+  }
+}
+```
+
+### Semantic Search (RAG)
+
+```http
+GET /api/memory/rag?q=query&agent=main&limit=10
+```
+
+Semantic search across agent memory using the configured embedding provider.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | required | Search query (min 2 chars) |
+| `agent` | string | `main` | Agent ID to search |
+| `limit` | number | `10` | Max results to return |
+
+```http
+POST /api/memory/rag
+```
+
+Trigger memory reindexing.
+
+**Body:**
+```json
+{
+  "agent": "main",
+  "force": true
+}
+```
+
 ---
 
 ## Docs
@@ -1085,6 +1164,26 @@ Update a task status on the board.
 ### POST /api/board/import
 
 Import board data from external YAML files.
+
+---
+
+## Content Publishing
+
+### POST /api/content/publish
+
+Publish content to configured platforms (LinkedIn, Twitter, etc.) with approval flow.
+
+### GET /api/content/platforms
+
+List available platform adapters and their configuration status.
+
+---
+
+## Telegram Webhook
+
+### POST /api/telegram/webhook
+
+Telegram bot webhook endpoint. Handles inline approval buttons and media uploads.
 
 ---
 

@@ -291,6 +291,62 @@ To access your ClawHalla instance from anywhere without exposing ports to the pu
 
 ---
 
+## Memory Configuration
+
+ClawHalla includes a built-in RAG (Retrieval-Augmented Generation) system for semantic search over agent memory files. Configure it in `openclaw.json` under `agents.defaults.memorySearch`:
+
+```json title="openclaw.json"
+{
+  "agents": {
+    "defaults": {
+      "memorySearch": {
+        "provider": "ollama"
+      }
+    }
+  }
+}
+```
+
+### Available providers
+
+| Provider | Config value | Notes |
+|----------|-------------|-------|
+| **Ollama** | `"ollama"` | Free, local, recommended for Docker setups |
+| **Node GGUF** | `"gguf"` | Free, runs inside Node.js via node-llama-cpp |
+| **OpenAI** | `"openai"` | Requires `OPENAI_API_KEY` |
+| **Google Gemini** | `"gemini"` | Requires API key in Vault |
+| **Voyage AI** | `"voyage"` | Requires API key in Vault |
+| **Mistral** | `"mistral"` | Requires API key in Vault |
+
+### Per-agent overrides
+
+Each agent can override the default memory mode. Set `memorySearch` on individual agents in `agents.list`:
+
+```json title="openclaw.json"
+{
+  "agents": {
+    "list": [
+      {
+        "id": "mimir",
+        "memorySearch": {}                      // inherits defaults (RAG enabled)
+      },
+      {
+        "id": "freya",
+        "memorySearch": { "enabled": false }    // .md file memory only
+      }
+    ]
+  }
+}
+```
+
+<Aside type="caution">
+  The `memorySearch` field must be an object, not a boolean. Use `{ "enabled": false }` to disable RAG for a specific agent. Omit the field entirely to inherit from defaults.
+</Aside>
+
+For the full guide on embedding providers, Mission Control UI configuration, semantic search API, and troubleshooting, see the [Memory & RAG guide](/guides/memory-rag/).
+
+---
+
 ## Bootstrap Files
 
 Agent behavior is configured through markdown files in the workspace. These are injected at the start of every session:

@@ -31,8 +31,8 @@ ClawHalla is a multi-layered system that connects AI agents to messaging surface
                     │              Agent Layer                      │
                     │                                              │
                     │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
-                    │  │ Claw │ │ Odin │ │ Vidar│ │Frigg │ ...   │
-                    │  │ T0   │ │ T1   │ │ T1   │ │ T2   │       │
+                    │  │ Claw │ │ Thor │ │ Vidar│ │Frigg │ ...   │
+                    │  │Chief │ │ Dev  │ │ B/C  │ │ PA   │       │
                     │  └──┬───┘ └──┬───┘ └──┬───┘ └──┬───┘       │
                     │     │        │        │        │             │
                     │  ┌──▼────────▼────────▼────────▼──┐         │
@@ -115,59 +115,60 @@ The gateway routes incoming messages to agents based on binding rules:
 
 ClawHalla organizes agents into four tiers:
 
-### Tier 0 -- Platform Controller
+### Tier 0 -- Chief Orchestrator
 
 | Agent | Role | Model |
 |-------|------|-------|
-| **Claw** | System Controller | Opus 4.6 |
+| **Claw** | Chief Orchestrator | Opus 4.6 |
 
-The platform controller manages runtime, configuration, and agent registration. It never executes project tasks directly -- it delegates to executives.
+The chief orchestrator manages runtime, configuration, and agent coordination. It delegates work to squad leads and approves outgoing actions.
 
-### Tier 1 -- Executives
+### Personal Squad
 
-| Agent | Role | Model | Manages |
-|-------|------|-------|---------|
-| **Odin** | CTO | Sonnet 4.6 | Thor, Frigg |
-| **Vidar** | Blockchain Architect | Sonnet 4.6 | Sindri, Skadi, Tyr |
-| **Saga** | Research Lead | Sonnet 4.6 | -- |
+| Agent | Role | Model |
+|-------|------|-------|
+| **Frigg** | Personal Assistant / Coordinator | Haiku 4.5 |
+| **Mimir** | Knowledge Curator | Sonnet 4.6 |
 
-Executives make architectural decisions, manage squads, and escalate to the CEO (Daniel) when needed.
+Handles scheduling, memory curation, and personal coordination for Daniel.
 
-### Tier 2 -- Management
+### Dev Squad
 
-| Agent | Role | Model | Manages |
-|-------|------|-------|---------|
-| **Thor** | Tech Lead | Sonnet 4.6 | Freya, Heimdall, Volund |
-| **Frigg** | Coordinator (PA) | Haiku 4.5 | Mimir, Bragi, Loki |
-| **Tyr** | Security Auditor | Opus 4.6 | -- |
+| Agent | Role | Model |
+|-------|------|-------|
+| **Thor** | Tech Lead | Sonnet 4.6 |
+| **Freya** | Senior Dev | Sonnet 4.6 |
+| **Tyr** | Security Auditor | Opus 4.6 |
 
-Managers route tasks, review work, and handle day-to-day operations.
+Full-stack development, code review, and security auditing.
 
-### Tier 3 -- Execution
+### Social Squad
 
-| Agent | Role | Model | Squad |
-|-------|------|-------|-------|
-| **Freya** | Senior Dev | Sonnet 4.6 | Dev |
-| **Heimdall** | QA Observer | Haiku 4.5 | Dev |
-| **Volund** | Dev/GitHub | Sonnet 4.6 | Dev |
-| **Sindri** | Solidity Dev | Sonnet 4.6 | Blockchain |
-| **Skadi** | Cairo Dev | Sonnet 4.6 | Blockchain |
-| **Mimir** | Knowledge Curator | Sonnet 4.6 | Clop Cabinet |
-| **Bragi** | Content Creator | Sonnet 4.6 | Clop Cabinet |
-| **Loki** | Monitor/Analyst | Sonnet 4.6 | Clop Cabinet |
+| Agent | Role | Model |
+|-------|------|-------|
+| **Saga** | Research Lead | Sonnet 4.6 |
+| **Bragi** | Content Creator | Sonnet 4.6 |
 
-Execution agents do the actual work: writing code, creating content, researching, monitoring.
+Content research, creation, and publishing across social platforms.
+
+### Blockchain
+
+| Agent | Role | Model |
+|-------|------|-------|
+| **Vidar** | Blockchain Architect | Sonnet 4.6 |
+
+Smart contracts, DeFi, and blockchain architecture.
 
 ### Squads
 
 Agents are grouped into squads with clear domains:
 
-| Squad | Chief | Domain |
-|-------|-------|--------|
-| **dev_squad** | Odin | Full-stack development |
-| **blockchain_squad** | Vidar | Smart contracts, security |
-| **clop_cabinet** | Frigg | Content, research, monitoring |
-| **product_squad** | Saga | Product research, strategy |
+| Squad | Lead | Domain |
+|-------|------|--------|
+| **personal** | Frigg | Scheduling, memory, coordination |
+| **dev_squad** | Thor | Full-stack development, security |
+| **social** | Saga | Content, research, publishing |
+| **blockchain** | Vidar | Smart contracts, DeFi |
 
 ### Escalation chain
 
@@ -355,6 +356,26 @@ CREATE TABLE workspace_files (
   created_at INTEGER NOT NULL
 );
 ```
+
+### Memory & RAG System
+
+Each agent has its own memory store with two layers:
+
+```
+Agent Memory Directory (.md files)
+  │
+  ├── FTS5 Index (keyword search)
+  │     └── SQLite with porter stemming
+  │
+  └── Vector Index (semantic search)
+        └── Embeddings from configurable provider
+              ├── Ollama (local, Docker)
+              ├── Node GGUF (node-llama-cpp)
+              ├── OpenAI / Gemini / Voyage / Mistral
+              └── Per-agent: RAG | .md-only | default
+```
+
+The RAG system is configured globally via `agents.defaults.memorySearch` in `openclaw.json`, with per-agent overrides on `agents.list[n].memorySearch`. Mission Control provides a UI for managing both.
 
 ### Boards Engine (v1.0.1)
 
