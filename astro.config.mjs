@@ -28,9 +28,16 @@ export default defineConfig({
           ],
         },
         {
+          label: 'CLI',
+          items: [
+            { label: 'Overview', link: '/cli/' },
+          ],
+        },
+        {
           label: 'Guides',
           items: [
             { label: 'Your First Agent', link: '/guides/first-agent/' },
+            { label: 'Workshop mode (remote tunnel)', link: '/guides/workshop-mode/' },
             { label: 'Customization', link: '/guides/customization/' },
             { label: 'Content Pipeline', link: '/guides/content-pipeline/' },
             { label: 'Autopilot', link: '/guides/autopilot/' },

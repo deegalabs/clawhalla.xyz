@@ -1,0 +1,126 @@
+---
+title: ClawHalla CLI
+description: The clawhalla CLI — SSH tunnel to a remote OpenClaw gateway and run Mission Control locally.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+The `clawhalla` CLI gives you two things on one command:
+
+1. **`clawhalla connect`** — opens an SSH tunnel from your laptop to a remote VPS running OpenClaw, so Mission Control can talk to a gateway you do not have to install locally.
+2. **`clawhalla mc`** — installs and runs Mission Control in the background, without touching a `cd apps/mission-control && pnpm install && pnpm dev` dance.
+
+This is the path most workshop users want. If you would rather run the whole OpenClaw stack locally in Docker, see [Installation](/getting-started/installation/).
+
+## Install
+
+The CLI currently ships from the monorepo. Clone the repo and link the `clawhalla` binary on your PATH:
+
+```bash
+git clone https://github.com/deegalabs/clawhalla.git
+cd clawhalla/apps/cli
+pnpm install && pnpm build
+ln -s "$(pwd)/bin/clawhalla.js" ~/.local/bin/clawhalla
+clawhalla --version
+```
+
+Make sure `~/.local/bin` is on your `PATH`.
+
+## Command reference
+
+### `clawhalla connect <target>`
+
+Opens an SSH tunnel to a remote OpenClaw gateway and publishes it on a local port so Mission Control can talk to it.
+
+```bash
+clawhalla connect root@vps.example.com:22022 \
+  --alias my-box \
+  --remote-gateway-port 47716 \
+  --no-bridge
+```
+
+| Flag | Purpose |
+| --- | --- |
+| `--alias <name>` | Local alias for the tunnel. Defaults to the first DNS label of the host. |
+| `--identity <path>` | SSH private key to use. Defaults to the ClawHalla-managed key in `~/.clawhalla/keys/id_ed25519`, auto-generated on first run. |
+| `--remote-gateway-port <port>` | Remote OpenClaw HTTP gateway port. Default `18789`. Workshop VPSs often publish it on a different port (e.g. `47716`). |
+| `--remote-bridge-port <port>` | Remote OpenClaw WS bridge port. Default `18790`. |
+| `--no-bridge` | Skip the WS bridge forward entirely. Use this for bare-OpenClaw VPSs that only publish the HTTP gateway port. |
+| `--bind <host>` | Local interface to bind the forwarded ports on. Default `127.0.0.1`. Use `0.0.0.0` if Mission Control runs inside a Docker container on Linux. |
+| `--skip-probe` | Skip the BatchMode SSH probe. Useful for password-only targets. |
+| `--no-auto-key` | Do not auto-generate or install a ClawHalla-managed SSH key. |
+
+### `clawhalla disconnect [alias]`
+
+Closes an active tunnel. Pass an alias, or `--all` to close every tunnel at once.
+
+```bash
+clawhalla disconnect my-box
+clawhalla disconnect --all
+```
+
+### `clawhalla status`
+
+Lists every active tunnel with its local ports and the remote target.
+
+```bash
+clawhalla status
+```
+
+### `clawhalla mc <subcommand>`
+
+Installs and runs Mission Control without leaving the CLI.
+
+| Subcommand | What it does |
+| --- | --- |
+| `mc install` | Checks `git`/`pnpm`, clones the clawhalla repo into `~/.clawhalla/source` (or reuses the current checkout if you're inside the monorepo), runs `pnpm install`, creates `~/.openclaw/workspace` and `apps/mission-control/data`. |
+| `mc start [--port 3000]` | Spawns `pnpm dev` detached so it survives the CLI exit. Writes the pid to `~/.clawhalla/mc.pid` and polls the HTTP root until it responds. Prints the URL + PID + log path. |
+| `mc stop` | Sends `SIGTERM` to the Mission Control process group, falls back to `SIGKILL` after a grace period, clears the pidfile. |
+| `mc status [--port 3000]` | Reports whether the pid is alive and whether HTTP is responding. |
+| `mc logs [-f]` | Dumps the last 16 KB of the log. With `-f`, shells out to `tail -f` (Linux/macOS). On Windows, prints a `Get-Content -Wait` hint. |
+| `mc open [--port 3000]` | Opens Mission Control in your default browser (cross-platform: `xdg-open` / `open` / `start`). |
+
+## Typical flow
+
+```bash
+# 1. Install MC once
+clawhalla mc install
+
+# 2. Start it in the background
+clawhalla mc start
+
+# 3. Open an SSH tunnel to a remote OpenClaw gateway
+clawhalla connect root@vps.example.com:22022 --remote-gateway-port 47716 --no-bridge
+
+# 4. Open the browser
+clawhalla mc open
+```
+
+When you finish:
+
+```bash
+clawhalla disconnect --all
+clawhalla mc stop
+```
+
+## State on disk
+
+Everything the CLI writes lives under `~/.clawhalla/`:
+
+- `tunnels.json` — registry of active tunnels (read by Mission Control's connectivity banner)
+- `keys/id_ed25519` — managed SSH key used for `clawhalla connect`
+- `source/` — managed clone of the clawhalla monorepo (only if you did not run from a checkout)
+- `mc.pid`, `mc.log` — Mission Control process state and output
+
+Nothing writes outside that directory. Deleting `~/.clawhalla/` fully resets the CLI.
+
+## Next steps
+
+<CardGrid>
+  <Card title="Workshop mode" icon="rocket">
+    [End-to-end walkthrough](/guides/workshop-mode/) against a remote VPS.
+  </Card>
+  <Card title="Configuration" icon="setting">
+    [Environment variables](/reference/environment/) and `openclaw.json`.
+  </Card>
+</CardGrid>

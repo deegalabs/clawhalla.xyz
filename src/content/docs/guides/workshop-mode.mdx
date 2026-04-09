@@ -1,0 +1,100 @@
+---
+title: Workshop mode (remote tunnel)
+description: Run Mission Control on your laptop against a remote OpenClaw gateway over an SSH tunnel.
+---
+
+Workshop mode is for the case where OpenClaw is already running on a remote VPS (typical of ipe.city-style buildathon boxes) and you only want to drive it from your laptop. No local Docker, no local OpenClaw install — just an SSH tunnel and Mission Control.
+
+## Prerequisites
+
+- `git`, `pnpm`, and `node` 20+ on your machine
+- SSH access to a VPS that is running OpenClaw and publishing the HTTP gateway on some port (default `18789`, but workshop boxes often use a mapped port like `47716`)
+- The `clawhalla` CLI on your `PATH` (see [ClawHalla CLI — Install](/cli/))
+
+## Step 1 — Install Mission Control locally
+
+```bash
+clawhalla mc install
+```
+
+This clones the clawhalla repo into `~/.clawhalla/source` (or reuses the current checkout if you are already inside the monorepo), runs `pnpm install`, and creates the Mission Control data directory. Run this once per machine.
+
+## Step 2 — Start Mission Control
+
+```bash
+clawhalla mc start
+```
+
+Mission Control is spawned detached, so the dev server keeps running after the CLI exits. The command prints the URL, the pid, and the log file path, then returns. If you tail the log:
+
+```bash
+clawhalla mc logs -f
+```
+
+## Step 3 — Open an SSH tunnel to the remote gateway
+
+```bash
+clawhalla connect root@vps.example.com:22022 \
+  --alias workshop \
+  --remote-gateway-port 47716 \
+  --no-bridge
+```
+
+Breakdown of the flags:
+
+- `root@vps.example.com:22022` — the VPS SSH target (user, host, optional port)
+- `--alias workshop` — a friendly name for this tunnel, used by `disconnect` / `status`
+- `--remote-gateway-port 47716` — the port OpenClaw is published on inside the VPS. If you omit this, the CLI assumes `18789` (the OpenClaw default)
+- `--no-bridge` — skip the secondary WS bridge forward. Bare-OpenClaw VPSs only publish the HTTP gateway, not the bridge; the flag makes the CLI tolerate that
+
+The first time you run this, the CLI will generate an `ed25519` keypair under `~/.clawhalla/keys/` and try to install the public half on the VPS via `ssh-copy-id`. On subsequent runs it reuses the same key and connects without prompting.
+
+:::caution[`--bind 0.0.0.0`]
+If you run Mission Control inside a Docker container on Linux and it is trying to reach the tunnel from outside the host network namespace, pass `--bind 0.0.0.0`. The CLI prints a security warning when you do this — the tunnel becomes reachable from anywhere on your LAN, so only use it on trusted networks.
+:::
+
+## Step 4 — Open Mission Control
+
+```bash
+clawhalla mc open
+```
+
+At the top of the onboarding wizard you should see a green banner:
+
+> ● Connected via ClawHalla tunnel
+> workshop → vps.example.com · local :18789 → remote :47716
+
+If the banner is red or amber, the [Connectivity states](#connectivity-states) section below tells you what to do.
+
+## Step 5 — Drive onboarding
+
+Fill in the wizard. The gateway URL should already be `http://127.0.0.1:18789` (or whatever local port the CLI allocated — Mission Control detects this automatically). You will need to provide:
+
+- The gateway token (you can fetch it from the VPS: `docker exec <container> cat /home/node/.openclaw/openclaw.json` and look for `gateway.auth.token`)
+- An Anthropic or Google API key (or pick Ollama / skip)
+- The squad you want to create — `hackathon` ships with six agents (Thor, Odin, Freya, Tyr, Heimdall, Bragi) and nine skills per agent out of the box
+
+After you finish onboarding, Mission Control generates IDENTITY.md / SOUL.md / skills under `~/.openclaw/workspace/squads/<squad>/<agent>/` for every agent on the team.
+
+## Step 6 — Tear down
+
+```bash
+clawhalla disconnect --all
+clawhalla mc stop
+```
+
+Both are idempotent — running them when there is nothing to tear down is a no-op.
+
+## Connectivity states
+
+Mission Control polls `/api/connection/probe` every four seconds and renders one of these banners:
+
+| Banner | What it means | Fix |
+| --- | --- | --- |
+| **● Connected via ClawHalla tunnel** (green) | Tunnel is up and the remote gateway is answering HTTP | Nothing. Proceed with onboarding. |
+| **▲ Tunnel up, remote gateway not responding** (amber) | SSH tunnel is alive but OpenClaw on the VPS is not answering | Check OpenClaw is running on the VPS: `ssh <vps> "docker ps"` |
+| **■ ClawHalla tunnel has exited** (red) | `~/.clawhalla/tunnels.json` has entries but the SSH pid is gone — usually after a reboot | `clawhalla connect ...` again |
+| **▲ Local OpenClaw config detected** (amber) | No tunnel, but `~/.openclaw/openclaw.json` exists from a local install | Start local OpenClaw, or run `clawhalla connect` |
+| **■ No OpenClaw connection detected** (red) | Nothing found anywhere | `clawhalla connect <vps>` or install OpenClaw locally |
+
+The banner auto-refreshes, so you can bring a tunnel up in a second terminal and watch the state flip to green without reloading the page.

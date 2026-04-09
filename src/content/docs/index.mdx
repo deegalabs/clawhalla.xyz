@@ -5,32 +5,48 @@ description: Your AI agent's hall of glory. Running in one command.
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-ClawHalla is an opinionated distribution of [OpenClaw](https://openclaw.ai) that removes all setup friction. One command gets you a running AI agent system with Mission Control, pre-trained agents, and a management dashboard.
+ClawHalla is the fastest way to run [OpenClaw](https://openclaw.ai). Two paths, same destination.
+
+## Pick your path
+
+<CardGrid>
+  <Card title="Local Docker launcher" icon="rocket">
+    Run the whole OpenClaw stack on your machine in Docker. Best when you want a self-contained environment and you're happy to pull the full image locally.
+
+    ```bash
+    curl -fsSL https://clawhalla.xyz/install.sh | bash
+    ```
+
+    [Full installation →](/getting-started/installation/)
+  </Card>
+  <Card title="Remote tunnel + local MC" icon="seti:config">
+    Keep the OpenClaw gateway on a remote VPS and run Mission Control on your laptop over an SSH tunnel. Best for workshops and buildathons where someone else already set up the VPS.
+
+    ```bash
+    clawhalla mc install && clawhalla mc start
+    clawhalla connect root@vps.example.com:22022 --no-bridge
+    ```
+
+    [Workshop mode guide →](/guides/workshop-mode/)
+  </Card>
+</CardGrid>
 
 ## Why ClawHalla?
 
-OpenClaw is a powerful AI agent framework, but setting it up requires navigating auth profiles, model configuration, and multiple CLI commands. ClawHalla wraps all of this in a guided installer with a web dashboard.
+OpenClaw is a powerful AI agent framework, but setting it up by hand requires Node, pnpm, multiple CLI commands, and understanding the ecosystem. ClawHalla gives you:
 
-**One command. Everything configured. Agents ready.**
-
-## Quick Start
-
-```bash
-curl -fsSL https://clawhalla.xyz/install.sh | bash
-```
-
-The installer will ask for:
-- A workspace name
-- Install mode (Docker or bare metal)
-- Which services to include (Mission Control, Ollama)
-
-Then open Mission Control at `http://localhost:3000` to connect your AI provider and start using agents.
+- A pre-configured Docker container for the all-in-one local path
+- A `clawhalla` CLI with `connect` (SSH tunnels) and `mc` (install/start/stop Mission Control) for the remote path
+- Mission Control — a browser UI for onboarding, squads, agents, and skills
 
 ## Next Steps
 
 <CardGrid>
   <Card title="Installation" icon="rocket">
-    [Full installation guide with Docker and bare metal options](/getting-started/installation/)
+    [Detailed installation guide](/getting-started/installation/) for the local Docker path
+  </Card>
+  <Card title="ClawHalla CLI" icon="seti:powershell">
+    [Command reference](/cli/) for `connect`, `disconnect`, `status`, and `mc`
   </Card>
   <Card title="Configuration" icon="setting">
     [Configure providers, models, and channels](/getting-started/configuration/)
